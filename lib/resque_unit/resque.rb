@@ -1,12 +1,16 @@
 class Resque
 
+  def self.reset!
+    @queue = Hash.new { |h, k| h[k] = [] }
+  end
+
   def self.queue(queue)
-    @queue ||= Hash.new { |h, k| h[k] = [] }
+    self.reset unless @queue
     @queue[queue]
   end
 
   def self.enqueue(klass, *args)
-    queue(queue_for(klass)) << klass
+    queue(queue_for(klass)) << {:klass => klass, :args => args}
   end
 
   def self.queue_for(klass)
