@@ -1,5 +1,12 @@
+# These are a group of assertions you can use in your unit tests to
+# verify that your code is using Resque correctly.
 module ResqueUnit::Assertions
-
+  
+  # Asserts that +klass+ has been queued into its appropriate queue at
+  # least once. If +args+ is nil, it only asserts that the klass has
+  # been queued. Otherwise, it asserts that the klass has been queued
+  # with the correct arguments. Pass an empty array for +args+ if you
+  # want to assert that klass has been queued without arguments.
   def assert_queued(klass, args = nil, message = nil)
     queue = Resque.queue_for(klass)
     assert_block (message || "#{klass} should have been queued in #{queue}: #{Resque.queue(queue).inspect}.") do 
@@ -7,6 +14,7 @@ module ResqueUnit::Assertions
     end
   end
 
+  # The opposite of +assert_queued+.
   def assert_not_queued(klass, args = nil, message = nil)
     queue = Resque.queue_for(klass)
     assert_block (message || "#{klass} should have been queued in #{queue}.") do 
