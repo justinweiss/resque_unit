@@ -23,10 +23,25 @@ class ResqueUnitTest < ActiveSupport::TestCase
       end
     end
 
+    context ", when Resque.run! is called," do 
+      setup do 
+        assert !LowPriorityJob.run?, "The job should not have been run yet"
+        Resque.run!
+      end
+      
+      teardown do 
+        LowPriorityJob.run = false
+      end
+
+      should "run the job" do 
+        assert LowPriorityJob.run?, "The job should have run"
+      end
+    end
+
     # assert number of jobs?
   end
 
-  context "an empty queue" do
+  context "An empty queue" do
     should "pass the assert_not_queued(job) assertion" do 
       assert_not_queued(LowPriorityJob)
     end

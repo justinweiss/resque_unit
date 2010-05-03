@@ -9,9 +9,22 @@ class Resque
     @queue = Hash.new { |h, k| h[k] = [] }
   end
 
+  # Returns an array of all the jobs that have been queued. Each
+  # element is of the form +{:klass => klass, :args => args}+ where
+  # +klass+ is the job's class and +args+ is an array of the arguments
+  # passed to the job.
   def self.queue(queue)
     self.reset unless @queue
     @queue[queue]
+  end
+
+  # Executes all jobs in all queues in an undefined order.
+  def self.run!
+    @queue.each do |k, v|
+      v.each do |job|
+        job[:klass].perform(*job[:args])
+      end
+    end
   end
 
   # :nodoc: 
