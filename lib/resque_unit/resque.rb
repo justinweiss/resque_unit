@@ -1,6 +1,6 @@
 # The fake Resque class. This needs to be loaded after the real Resque
 # for the assertions in +ResqueUnit::Assertions+ to work.
-class Resque
+module Resque
 
   # Resets all the queues to the empty state. This should be called in
   # your test's +setup+ method until I can figure out a way for it to
