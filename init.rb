@@ -1,2 +1,4 @@
 # Include hook code here
-require 'resque_unit'
+if RAILS_ENV == 'test'
+  require 'resque_unit'
+end
