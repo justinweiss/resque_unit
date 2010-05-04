@@ -21,7 +21,7 @@ class Resque
   # Executes all jobs in all queues in an undefined order.
   def self.run!
     @queue.each do |k, v|
-      v.each do |job|
+      while job = v.shift
         job[:klass].perform(*job[:args])
       end
     end

@@ -1,6 +1,5 @@
 ResqueUnit
 ==========
-http://github.com/justinweiss/resque_unit
 
 ResqueUnit provides some extra assertions and a mock Resque for
 testing Rails code that depends on Resque. You can install it as
@@ -18,8 +17,8 @@ If you'd rather install it as a plugin, you should be able to run
 
 inside your Rails projects. 
 
-Example
-=======
+Examples
+========
 
 ResqueUnit provides some extra assertions for your unit tests. For
 example, if you have code that queues a resque job:
@@ -53,11 +52,11 @@ You can also verify that a job was queued with arguments:
 And you can run all the jobs in the queue, so you can verify that they
 run correctly:
 
-   def test_job_runs 
-     queue_job 
-     Resque.run!
-     assert stuff_was_done, "Job didn't run"
-   end
+    def test_job_runs 
+      queue_job 
+      Resque.run!
+      assert stuff_was_done, "Job didn't run"
+    end
 
 You can also access the queues directly:
 

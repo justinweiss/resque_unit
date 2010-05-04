@@ -36,6 +36,10 @@ class ResqueUnitTest < ActiveSupport::TestCase
       should "run the job" do 
         assert LowPriorityJob.run?, "The job should have run"
       end
+
+      should "clear the job from the queue" do
+        assert_not_queued(LowPriorityJob)
+      end
     end
 
     # assert number of jobs?
