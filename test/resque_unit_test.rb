@@ -7,6 +7,14 @@ class ResqueUnitTest < ActiveSupport::TestCase
     # good way to hook setup() yet.
     Resque.reset!
   end
+
+  context "A task that schedules a resque job implementing self.queue" do
+    setup { Resque.enqueue(MediumPriorityJob) }
+    should "pass the assert_queued(job) assertion" do
+      assert_queued(MediumPriorityJob)
+      assert_equal 1, Resque.queue(MediumPriorityJob.queue).length
+    end
+  end
   
   context "A task that schedules a resque job" do
     setup do 

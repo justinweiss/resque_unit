@@ -34,7 +34,7 @@ module Resque
 
   # :nodoc: 
   def self.queue_for(klass)
-    klass.instance_variable_get(:@queue)
+    klass.instance_variable_get(:@queue) || (klass.respond_to?(:queue) && klass.queue)
   end
 
 end

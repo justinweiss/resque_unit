@@ -15,6 +15,12 @@ class LowPriorityJob
 
 end
 
+class MediumPriorityJob
+  def self.queue
+    :medium
+  end
+end
+
 class JobWithArguments
   @queue = :medium
 
