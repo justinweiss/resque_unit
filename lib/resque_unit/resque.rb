@@ -14,7 +14,7 @@ module Resque
   # +klass+ is the job's class and +args+ is an array of the arguments
   # passed to the job.
   def self.queue(queue)
-    self.reset unless @queue
+    self.reset! unless @queue
     @queue[queue]
   end
 
