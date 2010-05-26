@@ -17,7 +17,7 @@ module ResqueUnit::Assertions
   # The opposite of +assert_queued+.
   def assert_not_queued(klass, args = nil, message = nil)
     queue = Resque.queue_for(klass)
-    assert_block (message || "#{klass} should have been queued in #{queue}.") do 
+    assert_block (message || "#{klass} should not have been queued in #{queue}.") do 
       !in_queue?(queue, klass, args)
     end
   end
@@ -25,11 +25,15 @@ module ResqueUnit::Assertions
   private
 
   def in_queue?(queue, klass, args = nil)
-    if args # verify the klass and args match some element in the queue
-      !Resque.queue(queue).select {|e| e[:klass] == klass && e[:args] == args}.empty?
-    else # if no args were passed, just verify the job is in the queue
-      !Resque.queue(queue).select {|e| e[:klass] == klass}.empty?
+    !matching_jobs(queue, klass, args).empty?
+  end
+
+  def matching_jobs(queue, klass, args = nil)
+    if args # retrieve the elements that match klass and args in the queue
+      Resque.queue(queue).select {|e| e[:klass] == klass && e[:args] == args}
+    else # if no args were passed, retrieve all queued jobs that match klass
+      Resque.queue(queue).select {|e| e[:klass] == klass}
     end
   end
-  
+
 end

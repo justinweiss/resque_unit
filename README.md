@@ -71,4 +71,22 @@ Caveats
 * You should make sure that you call `Resque.reset!` in your test's
   setup method to clear all of the test queues.
 
+Resque-Scheduler Support
+========================
+
+By calling `require 'resque_unit_scheduler'`, ResqueUnit will provide
+mocks for resque-scheduler's `enqueue_at` and `enqueue_in` methods,
+along with a few extra assertions. These are used like this:
+
+    Resque.enqueue_in(600, MediumPriorityJob) # enqueues MediumPriorityJob in 600 seconds
+    assert_queued_in(600, MediumPriorityJob) # will pass
+    assert_not_queued_in(300, MediumPriorityJob) # will also pass
+
+    Resque.enqueue_at(Time.now + 10, MediumPriorityJob) # enqueues MediumPriorityJob at 10 seconds from now
+    assert_queued_at(Time.now + 10, MediumPriorityJob) # will pass
+    assert_not_queued_at(Time.now + 1, MediumPriorityJob) # will also pass
+
+For now, `assert_queued` and `assert_not_queued` will pass for any
+scheduled job. `Resque.run!` will run all scheduled jobs as well.
+
 Copyright (c) 2010 Justin Weiss, released under the MIT license

@@ -1,8 +1,8 @@
 require 'test_helper'
 
-class ResqueUnitTest < ActiveSupport::TestCase
+class ResqueUnitTest < Test::Unit::TestCase
 
-  setup do
+  def setup
     # should probably happen automatically, but I haven't thought of a
     # good way to hook setup() yet.
     Resque.reset!
