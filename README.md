@@ -75,8 +75,9 @@ Resque-Scheduler Support
 ========================
 
 By calling `require 'resque_unit_scheduler'`, ResqueUnit will provide
-mocks for resque-scheduler's `enqueue_at` and `enqueue_in` methods,
-along with a few extra assertions. These are used like this:
+mocks for [resque-scheduler's](http://github.com/bvandenbos/resque-scheduler)
+`enqueue_at` and `enqueue_in` methods, along with a few extra
+assertions. These are used like this:
 
     Resque.enqueue_in(600, MediumPriorityJob) # enqueues MediumPriorityJob in 600 seconds
     assert_queued_in(600, MediumPriorityJob) # will pass
