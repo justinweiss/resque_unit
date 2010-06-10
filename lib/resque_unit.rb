@@ -1,6 +1,7 @@
 module ResqueUnit
 end
 
+require 'test/unit'
 require 'resque_unit/resque'
 require 'resque_unit/assertions'
 
