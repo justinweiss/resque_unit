@@ -101,7 +101,39 @@ class ResqueUnitTest < Test::Unit::TestCase
         assert_not_queued(JobWithArguments, [1, "test"])
       end
     end
-
   end
 
+  context "A job that schedules a new resque job" do
+    setup do 
+      Resque.enqueue(JobThatCreatesANewJob)
+    end
+
+    should "pass the assert_queued(job) assertion" do 
+      assert_queued(JobThatCreatesANewJob)
+    end
+
+    should "fail the assert_not_queued(job) assertion" do 
+      assert_raise Test::Unit::AssertionFailedError do 
+        assert_not_queued(JobThatCreatesANewJob)
+      end
+    end
+
+    should "pass the assert_not_queued(LowPriorityJob) assertion" do
+      assert_not_queued(LowPriorityJob)
+    end
+
+    context ", when Resque.run! is called," do 
+      setup do 
+        Resque.run!
+      end
+
+      should "clear the job from the queue" do
+        assert_not_queued(JobThatCreatesANewJob)
+      end
+
+      should "add a LowPriorityJob" do
+        assert_queued(LowPriorityJob)
+      end
+    end
+  end
 end

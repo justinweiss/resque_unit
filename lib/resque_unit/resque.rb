@@ -20,7 +20,10 @@ module Resque
 
   # Executes all jobs in all queues in an undefined order.
   def self.run!
-    @queue.each do |k, v|
+    old_queue = @queue.dup
+    reset!
+
+    old_queue.each do |k, v|
       while job = v.shift
         job[:klass].perform(*job[:args])
       end

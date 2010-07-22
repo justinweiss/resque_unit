@@ -12,7 +12,6 @@ class LowPriorityJob
   def self.run=(value)
     @run = value
   end
-
 end
 
 class MediumPriorityJob
@@ -26,5 +25,13 @@ class JobWithArguments
 
   def self.perform(num, text)
 
+  end
+end
+
+class JobThatCreatesANewJob
+  @queue = :spawn
+
+  def self.perform
+    Resque.enqueue(LowPriorityJob)
   end
 end
