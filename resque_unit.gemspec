@@ -1,6 +1,6 @@
 spec = Gem::Specification.new do |s|
   s.name = 'resque_unit'
-  s.version = '0.2.1'
+  s.version = '0.2.2'
   s.summary = 'Test::Unit support for resque job queueing'
   s.add_development_dependency "shoulda"
   s.author = "Justin Weiss"
