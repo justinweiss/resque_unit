@@ -31,6 +31,10 @@ class ResqueUnitTest < Test::Unit::TestCase
       end
     end
 
+    should "should be size 1" do
+      assert_equal 1, Resque.size(:low)
+    end
+
     context ", when Resque.run! is called," do 
       setup do 
         assert !LowPriorityJob.run?, "The job should not have been run yet"
@@ -62,6 +66,10 @@ class ResqueUnitTest < Test::Unit::TestCase
       assert_raise Test::Unit::AssertionFailedError do 
         assert_queued(LowPriorityJob)
       end
+    end
+
+    should "be size 0 when empty" do
+      assert_equal 0, Resque.size(:low)
     end
   end
   

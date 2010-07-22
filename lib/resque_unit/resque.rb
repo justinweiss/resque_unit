@@ -27,6 +27,12 @@ module Resque
     end
   end
 
+  # Returns the size of the given queue
+  def self.size(queue)
+    self.reset! unless @queue
+    @queue[queue].length
+  end
+
   # :nodoc: 
   def self.enqueue(klass, *args)
     queue(queue_for(klass)) << {:klass => klass, :args => args}
