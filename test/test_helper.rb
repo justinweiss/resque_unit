@@ -1,6 +1,5 @@
 require 'rubygems'
 require 'shoulda'
+require 'resque_unit'
 require 'sample_jobs'
 
-$:.unshift(File.dirname(__FILE__) + '/../lib')
-require 'resque_unit'

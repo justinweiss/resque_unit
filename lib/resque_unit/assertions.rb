@@ -17,7 +17,7 @@ module ResqueUnit::Assertions
   # The opposite of +assert_queued+.
   def assert_not_queued(klass, args = nil, message = nil)
     queue = Resque.queue_for(klass)
-    assert_block (message || "#{klass} should not have been queued in #{queue}.") do 
+    assert_block (message || "#{klass}#{args ? " with #{args.inspect}" : ""} should not have been queued in #{queue}.") do 
       !in_queue?(queue, klass, args)
     end
   end
