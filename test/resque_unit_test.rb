@@ -155,7 +155,5 @@ class ResqueUnitTest < Test::Unit::TestCase
         end
       end
     end
-
-    # TODO: of assert_not_queued
   end
 end
