@@ -9,7 +9,7 @@ module ResqueUnit::Assertions
   # want to assert that klass has been queued without arguments.
   def assert_queued(klass, args = nil, message = nil)
     queue = Resque.queue_for(klass)
-    assert_block (message || "#{klass} should have been queued in #{queue}: #{Resque.queue(queue).inspect}.") do 
+    assert_block (message || "#{klass}#{args ? " with #{args.inspect}" : ""} should have been queued in #{queue}: #{Resque.queue(queue).inspect}.") do 
       in_queue?(queue, klass, args)
     end
   end

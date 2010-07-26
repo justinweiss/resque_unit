@@ -136,4 +136,26 @@ class ResqueUnitTest < Test::Unit::TestCase
       end
     end
   end
+
+  context "An assertion message" do
+    context "of assert_queued" do
+      should "include job class and queue content" do
+        begin
+          assert_queued(LowPriorityJob)
+        rescue Test::Unit::AssertionFailedError => error
+          assert_equal "LowPriorityJob should have been queued in low: [].", error.message
+        end
+      end
+      
+      should "include job arguments if provided" do
+        begin
+          assert_queued(JobWithArguments, [1, "test"])
+        rescue Test::Unit::AssertionFailedError => error
+          assert_equal "JobWithArguments with [1, \"test\"] should have been queued in medium: [].", error.message
+        end
+      end
+    end
+
+    # TODO: of assert_not_queued
+  end
 end
