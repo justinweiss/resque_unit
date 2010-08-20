@@ -20,6 +20,13 @@ class MediumPriorityJob
   end
 end
 
+class HighPriorityJob
+  @queue = :high
+
+  def self.perform
+  end
+end
+
 class JobWithArguments
   @queue = :medium
 

@@ -15,7 +15,7 @@ class ResqueUnitTest < Test::Unit::TestCase
       assert_equal 1, Resque.queue(MediumPriorityJob.queue).length
     end
   end
-  
+
   context "A task that schedules a resque job" do
     setup do 
       Resque.enqueue(LowPriorityJob)
@@ -133,6 +133,30 @@ class ResqueUnitTest < Test::Unit::TestCase
 
       should "add a LowPriorityJob" do
         assert_queued(LowPriorityJob)
+      end
+    end
+  end
+
+  context "A task in a different queue" do
+    setup do
+      Resque.enqueue(LowPriorityJob)
+      Resque.enqueue(HighPriorityJob)
+    end
+
+    should "add a LowPriorityJob" do
+      assert_queued(LowPriorityJob)
+    end
+
+    should "add a HighPriorityJob" do
+      assert_queued(HighPriorityJob)
+    end
+
+    context ", when Resque.run_for! is called," do 
+      should "run only tasks in the high priority queue" do
+        Resque.run_for!(Resque.queue_for(HighPriorityJob))
+  
+        assert_queued(LowPriorityJob)
+        assert_not_queued(HighPriorityJob)
       end
     end
   end
