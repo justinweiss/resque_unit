@@ -202,4 +202,13 @@ class ResqueUnitTest < Test::Unit::TestCase
       end
     end
   end
+
+  context "A job that does not specify a queue" do
+    should "receive Resque::NoQueueError" do
+      assert_raise(Resque::NoQueueError) do
+        Resque.enqueue(JobThatDoesNotSpecifyAQueue)
+      end
+    end
+  end
+
 end

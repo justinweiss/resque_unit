@@ -42,3 +42,9 @@ class JobThatCreatesANewJob
     Resque.enqueue(LowPriorityJob)
   end
 end
+
+class JobThatDoesNotSpecifyAQueue
+  
+  def self.perform
+  end
+end
