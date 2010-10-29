@@ -46,6 +46,19 @@ module Resque
     end
   end
 
+  # 1. Execute all jobs in all queues in an undefined order,
+  # 2. Check if new jobs were announced, and execute them.
+  # 3. Repeat 3
+  def self.full_run!
+    until empty_queues?
+      @queue.each do |k, v|
+        while job = v.shift
+          job[:klass].perform(*job[:args])
+        end
+      end
+    end
+  end
+
   # Returns the size of the given queue
   def self.size(queue_name)
     self.reset! unless @queue
@@ -63,6 +76,13 @@ module Resque
   # :nodoc: 
   def self.queue_for(klass)
     klass.instance_variable_get(:@queue) || (klass.respond_to?(:queue) && klass.queue)
+  end
+
+  # :nodoc:
+  def self.empty_queues?
+    @queue.all? do |k, v|
+      v.empty?
+    end
   end
 
 end

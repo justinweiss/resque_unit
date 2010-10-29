@@ -135,6 +135,26 @@ class ResqueUnitTest < Test::Unit::TestCase
         assert_queued(LowPriorityJob)
       end
     end
+
+    context ", when Resque.full_run!" do
+      setup do
+        assert !LowPriorityJob.run?, "The job should not have been run yet, did you call 'LowPriorityJob.run = false' in teardowns of other tests?"
+        Resque.full_run!
+      end
+
+      teardown do 
+        LowPriorityJob.run = false
+      end
+
+      should "clear the jobs from the queue" do
+        assert_not_queued(JobThatCreatesANewJob)
+        assert_not_queued(LowPriorityJob)
+      end
+
+      should "run the new resque jobs" do
+        assert LowPriorityJob.run?, "LowPriorityJob should have been run"
+      end
+    end
   end
 
   context "A task in a different queue" do
