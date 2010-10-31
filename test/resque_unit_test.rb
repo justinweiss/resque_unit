@@ -57,6 +57,38 @@ class ResqueUnitTest < Test::Unit::TestCase
     # assert number of jobs?
   end
 
+  context "Block assertions" do
+    should "pass the assert_queued(job) assertion when queued in block" do
+      assert_queues(HighPriorityJob) do
+        Resque.enqueue(HighPriorityJob)
+      end
+    end
+
+    should "fail the assert_queued(job) assertion when not queued in block" do
+      Resque.enqueue(LowPriorityJob)
+      assert_raise Test::Unit::AssertionFailedError do
+        assert_queues(LowPriorityJob) do
+          # Nothing.
+        end
+      end
+    end
+
+    should "pass the assert_not_queued(job) assertion when not queued in block" do
+      Resque.enqueue(LowPriorityJob)
+      assert_not_queued(LowPriorityJob) do
+        # Nothing.
+      end
+    end
+
+    should "fail the assert_not_queued(job) assertion when not queued in block" do
+      assert_raise Test::Unit::AssertionFailedError do
+        assert_not_queued(LowPriorityJob) do
+          Resque.enqueue(LowPriorityJob)
+        end
+      end
+    end
+  end
+
   context "An empty queue" do
     should "pass the assert_not_queued(job) assertion" do 
       assert_not_queued(LowPriorityJob)
