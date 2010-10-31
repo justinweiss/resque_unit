@@ -42,6 +42,14 @@ module ResqueUnit::Assertions
     end
   end
 
+  # Asserts no jobs were queued within the block passed.
+  def assert_nothing_queued(message = nil, &block)
+    snapshot = Resque.size
+    yield
+    present = Resque.size
+    assert_equal snapshot, present, message || "No jobs should have been queued"
+  end
+
   private
 
   def in_queue?(queue, klass, args = nil)

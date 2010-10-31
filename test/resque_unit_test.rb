@@ -87,6 +87,21 @@ class ResqueUnitTest < Test::Unit::TestCase
         end
       end
     end
+
+    should "pass the assert_nothing_queued assertion when nothing queued in block" do
+      Resque.enqueue(LowPriorityJob)
+      assert_nothing_queued do
+        # Nothing.
+      end
+    end
+
+    should "fail the assert_nothing_queued assertion when queued in block" do
+      assert_raise Test::Unit::AssertionFailedError do
+        assert_nothing_queued do
+          Resque.enqueue(LowPriorityJob)
+        end
+      end
+    end
   end
 
   context "An empty queue" do
@@ -250,6 +265,19 @@ class ResqueUnitTest < Test::Unit::TestCase
           assert_not_queued(JobWithArguments, [1, "test"])
         rescue Test::Unit::AssertionFailedError => error
           assert_equal "JobWithArguments with [1, \"test\"] should not have been queued in medium.", error.message
+        end
+      end
+    end
+
+    context "of assert_nothing_queued" do
+      should "include diff" do
+        begin
+          Resque.reset!
+          assert_nothing_queued do
+            Resque.enqueue(LowPriorityJob)
+          end
+        rescue Test::Unit::AssertionFailedError => error
+          assert_equal "No jobs should have been queued.\n<0> expected but was\n<1>.", error.message
         end
       end
     end
