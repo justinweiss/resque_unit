@@ -246,9 +246,7 @@ class ResqueUnitTest < Test::Unit::TestCase
         end
       end
     end
-  end
 
-  context "An assertion message" do
     context "of assert_not_queued" do
       should "include job class and queue content" do
         begin
