@@ -64,6 +64,13 @@ class ResqueUnitTest < Test::Unit::TestCase
       end
     end
 
+    should "pass the assert_queued(job) assertion when queued and not in block" do
+      Resque.enqueue(HighPriorityJob)
+      assert_queues(HighPriorityJob) do
+        Resque.enqueue(HighPriorityJob)
+      end
+    end
+
     should "fail the assert_queued(job) assertion when not queued in block" do
       Resque.enqueue(LowPriorityJob)
       assert_raise Test::Unit::AssertionFailedError do
@@ -82,6 +89,15 @@ class ResqueUnitTest < Test::Unit::TestCase
 
     should "fail the assert_not_queued(job) assertion when not queued in block" do
       assert_raise Test::Unit::AssertionFailedError do
+        assert_not_queued(LowPriorityJob) do
+          Resque.enqueue(LowPriorityJob)
+        end
+      end
+    end
+
+    should "fail the assert_not_queued(job) assertion when queued and not in block" do
+      assert_raise Test::Unit::AssertionFailedError do
+        Resque.enqueue(LowPriorityJob)
         assert_not_queued(LowPriorityJob) do
           Resque.enqueue(LowPriorityJob)
         end

@@ -12,9 +12,9 @@ module ResqueUnit::Assertions
     queue_name = Resque.queue_for(klass)
 
     queue = if block_given?
-      snapshot = Resque.queue(queue_name).dup
+      snapshot = Resque.size(queue_name)
       yield
-      Resque.queue(queue_name) - snapshot
+      Resque.queue(queue_name)[snapshot..-1]
     else
       Resque.queue(queue_name)
     end
@@ -30,9 +30,9 @@ module ResqueUnit::Assertions
     queue_name = Resque.queue_for(klass)
 
     queue = if block_given?
-      snapshot = Resque.queue(queue_name).dup
+      snapshot = Resque.size(queue_name)
       yield
-      Resque.queue(queue_name) - snapshot
+      Resque.queue(queue_name)[snapshot..-1]
     else
       Resque.queue(queue_name)
     end
