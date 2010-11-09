@@ -1,6 +1,8 @@
 # The fake Resque class. This needs to be loaded after the real Resque
 # for the assertions in +ResqueUnit::Assertions+ to work.
 module Resque
+  include Helpers
+  extend self
 
   # Resets all the queues to the empty state. This should be called in
   # your test's +setup+ method until I can figure out a way for it to
@@ -70,7 +72,7 @@ module Resque
     queue_name = queue_for(klass)
     # Behaves like Resque, raise if no queue was specifed
     raise NoQueueError.new("Jobs must be placed onto a queue.") unless queue_name
-    queue(queue_name) << {:klass => klass, :args => args}
+    queue(queue_name) << {:klass => klass, :args => decode(encode(args))}
   end
 
   # :nodoc: 

@@ -75,11 +75,11 @@ class ResqueUnitTest < Test::Unit::TestCase
   
   context "A task that schedules a resque job with arguments" do 
     setup do 
-      Resque.enqueue(JobWithArguments, 1, "test")
+      Resque.enqueue(JobWithArguments, 1, :test, {:symbol => :symbol})
     end
     
-    should "pass the assert_queued(job, *args) assertion if the args match" do
-      assert_queued(JobWithArguments, [1, "test"])
+    should "pass the assert_queued(job, *args) assertion if the args match and sees enqueued symbols as strings" do
+      assert_queued(JobWithArguments, [1, "test", {"symbol"=>"symbol"}])
     end
     
     should "pass the assert_queued(job) assertion with no args passed" do
@@ -98,7 +98,7 @@ class ResqueUnitTest < Test::Unit::TestCase
 
     should "fail the assert_not_queued(job) assertion if the args match" do
       assert_raise Test::Unit::AssertionFailedError do 
-        assert_not_queued(JobWithArguments, [1, "test"])
+        assert_not_queued(JobWithArguments, [1, "test", {"symbol"=>"symbol"}])
       end
     end
   end

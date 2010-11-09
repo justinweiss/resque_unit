@@ -30,7 +30,7 @@ end
 class JobWithArguments
   @queue = :medium
 
-  def self.perform(num, text)
+  def self.perform(num, text, hash)
 
   end
 end
