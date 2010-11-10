@@ -9,7 +9,7 @@ module Resque
   # automatically be called.
   #
   # If <tt>queue_name</tt> is given, then resets only that queue.
-  def self.reset!(queue_name = nil)
+  def reset!(queue_name = nil)
     if @queue && queue_name
       @queue[queue_name] = []
     else
@@ -21,13 +21,13 @@ module Resque
   # element is of the form +{:klass => klass, :args => args}+ where
   # +klass+ is the job's class and +args+ is an array of the arguments
   # passed to the job.
-  def self.queue(queue_name)
+  def queue(queue_name)
     self.reset! unless @queue
     @queue[queue_name]
   end
 
   # Executes all jobs in all queues in an undefined order.
-  def self.run!
+  def run!
     old_queue = @queue.dup
     self.reset!
 
@@ -39,7 +39,7 @@ module Resque
   end
 
   # Executes all jobs in the given queue in an undefined order.
-  def self.run_for!(queue_name)
+  def run_for!(queue_name)
     jobs = self.queue(queue_name)
     self.reset!(queue_name)
 
@@ -51,7 +51,7 @@ module Resque
   # 1. Execute all jobs in all queues in an undefined order,
   # 2. Check if new jobs were announced, and execute them.
   # 3. Repeat 3
-  def self.full_run!
+  def full_run!
     until empty_queues?
       @queue.each do |k, v|
         while job = v.shift
@@ -62,13 +62,13 @@ module Resque
   end
 
   # Returns the size of the given queue
-  def self.size(queue_name)
+  def size(queue_name)
     self.reset! unless @queue
     @queue[queue_name].length
   end
 
   # :nodoc: 
-  def self.enqueue(klass, *args)
+  def enqueue(klass, *args)
     queue_name = queue_for(klass)
     # Behaves like Resque, raise if no queue was specifed
     raise NoQueueError.new("Jobs must be placed onto a queue.") unless queue_name
@@ -76,12 +76,12 @@ module Resque
   end
 
   # :nodoc: 
-  def self.queue_for(klass)
+  def queue_for(klass)
     klass.instance_variable_get(:@queue) || (klass.respond_to?(:queue) && klass.queue)
   end
 
   # :nodoc:
-  def self.empty_queues?
+  def empty_queues?
     @queue.all? do |k, v|
       v.empty?
     end
