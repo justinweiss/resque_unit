@@ -1,10 +1,19 @@
+PATH
+  remote: .
+  specs:
+    resque_unit (0.3.0)
+      json (~> 1.4.6)
+
 GEM
   remote: http://rubygems.org/
   specs:
+    json (1.4.6)
     shoulda (2.11.3)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
+  json (~> 1.4.6)
+  resque_unit!
   shoulda
