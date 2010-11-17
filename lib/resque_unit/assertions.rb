@@ -19,9 +19,8 @@ module ResqueUnit::Assertions
       Resque.queue(queue_name)
     end
 
-    assert_block (message || "#{klass}#{args ? " with #{args.inspect}" : ""} should have been queued in #{queue_name}: #{queue.inspect}.") do
-      in_queue?(queue, klass, args)
-    end
+    assert_with_custom_message(in_queue?(queue, klass, args),
+      message || "#{klass}#{args ? " with #{args.inspect}" : ""} should have been queued in #{queue_name}: #{queue.inspect}.")
   end
   alias assert_queues assert_queued
 
@@ -37,9 +36,8 @@ module ResqueUnit::Assertions
       Resque.queue(queue_name)
     end
 
-    assert_block (message || "#{klass}#{args ? " with #{args.inspect}" : ""} should not have been queued in #{queue_name}.") do
-      !in_queue?(queue, klass, args)
-    end
+    assert_with_custom_message(!in_queue?(queue, klass, args),
+      message || "#{klass}#{args ? " with #{args.inspect}" : ""} should not have been queued in #{queue_name}.")
   end
 
   # Asserts no jobs were queued within the block passed.
@@ -52,6 +50,21 @@ module ResqueUnit::Assertions
 
   private
 
+  # In Test::Unit, +assert_block+ displays only the message on a test
+  # failure and +assert+ always appends a message to the end of the
+  # passed-in assertion message. In MiniTest, it's the other way
+  # around. This abstracts those differences and never appends a
+  # message to the one the user passed in.
+  def assert_with_custom_message(value, message = nil)
+    if defined?(MiniTest::Assertions)
+      assert value, message
+    else
+      assert_block message do
+        value
+      end
+    end
+  end
+  
   def in_queue?(queue, klass, args = nil)
     !matching_jobs(queue, klass, args).empty?
   end

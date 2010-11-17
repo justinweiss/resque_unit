@@ -57,13 +57,7 @@ module Resque
   # 2. Check if new jobs were announced, and execute them.
   # 3. Repeat 3
   def full_run!
-    until empty_queues?
-      queues.each do |k, v|
-        while job = v.shift
-          job[:klass].perform(*job[:args])
-        end
-      end
-    end
+    run! until empty_queues?
   end
 
   # Returns the size of the given queue
