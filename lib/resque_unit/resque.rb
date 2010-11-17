@@ -17,13 +17,18 @@ module Resque
     end
   end
 
+  # Returns a hash of all the queue names and jobs that have been queued. The
+  # format is <tt>{queue_name => [job, ..]}</tt>.
+  def self.queues
+    @queue || reset!
+  end
+
   # Returns an array of all the jobs that have been queued. Each
   # element is of the form +{:klass => klass, :args => args}+ where
   # +klass+ is the job's class and +args+ is an array of the arguments
   # passed to the job.
   def queue(queue_name)
-    self.reset! unless @queue
-    @queue[queue_name]
+    queues[queue_name]
   end
 
   # Executes all jobs in all queues in an undefined order.
@@ -53,7 +58,7 @@ module Resque
   # 3. Repeat 3
   def full_run!
     until empty_queues?
-      @queue.each do |k, v|
+      queues.each do |k, v|
         while job = v.shift
           job[:klass].perform(*job[:args])
         end
@@ -62,9 +67,12 @@ module Resque
   end
 
   # Returns the size of the given queue
-  def size(queue_name)
-    self.reset! unless @queue
-    @queue[queue_name].length
+  def size(queue_name = nil)
+    if queue_name
+      queues[queue_name].length
+    else
+      queues.values.flatten.length
+    end
   end
 
   # :nodoc: 
@@ -82,7 +90,7 @@ module Resque
 
   # :nodoc:
   def empty_queues?
-    @queue.all? do |k, v|
+    queues.all? do |k, v|
       v.empty?
     end
   end

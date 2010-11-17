@@ -57,6 +57,69 @@ class ResqueUnitTest < Test::Unit::TestCase
     # assert number of jobs?
   end
 
+  context "Block assertions" do
+    should "pass the assert_queued(job) assertion when queued in block" do
+      assert_queues(HighPriorityJob) do
+        Resque.enqueue(HighPriorityJob)
+      end
+    end
+
+    should "pass the assert_queued(job) assertion when queued and not in block" do
+      Resque.enqueue(HighPriorityJob)
+      assert_queues(HighPriorityJob) do
+        Resque.enqueue(HighPriorityJob)
+      end
+    end
+
+    should "fail the assert_queued(job) assertion when not queued in block" do
+      Resque.enqueue(LowPriorityJob)
+      assert_raise Test::Unit::AssertionFailedError do
+        assert_queues(LowPriorityJob) do
+          # Nothing.
+        end
+      end
+    end
+
+    should "pass the assert_not_queued(job) assertion when not queued in block" do
+      Resque.enqueue(LowPriorityJob)
+      assert_not_queued(LowPriorityJob) do
+        # Nothing.
+      end
+    end
+
+    should "fail the assert_not_queued(job) assertion when not queued in block" do
+      assert_raise Test::Unit::AssertionFailedError do
+        assert_not_queued(LowPriorityJob) do
+          Resque.enqueue(LowPriorityJob)
+        end
+      end
+    end
+
+    should "fail the assert_not_queued(job) assertion when queued and not in block" do
+      assert_raise Test::Unit::AssertionFailedError do
+        Resque.enqueue(LowPriorityJob)
+        assert_not_queued(LowPriorityJob) do
+          Resque.enqueue(LowPriorityJob)
+        end
+      end
+    end
+
+    should "pass the assert_nothing_queued assertion when nothing queued in block" do
+      Resque.enqueue(LowPriorityJob)
+      assert_nothing_queued do
+        # Nothing.
+      end
+    end
+
+    should "fail the assert_nothing_queued assertion when queued in block" do
+      assert_raise Test::Unit::AssertionFailedError do
+        assert_nothing_queued do
+          Resque.enqueue(LowPriorityJob)
+        end
+      end
+    end
+  end
+
   context "An empty queue" do
     should "pass the assert_not_queued(job) assertion" do 
       assert_not_queued(LowPriorityJob)
@@ -199,9 +262,7 @@ class ResqueUnitTest < Test::Unit::TestCase
         end
       end
     end
-  end
 
-  context "An assertion message" do
     context "of assert_not_queued" do
       should "include job class and queue content" do
         begin
@@ -218,6 +279,19 @@ class ResqueUnitTest < Test::Unit::TestCase
           assert_not_queued(JobWithArguments, [1, "test"])
         rescue Test::Unit::AssertionFailedError => error
           assert_equal "JobWithArguments with [1, \"test\"] should not have been queued in medium.", error.message
+        end
+      end
+    end
+
+    context "of assert_nothing_queued" do
+      should "include diff" do
+        begin
+          Resque.reset!
+          assert_nothing_queued do
+            Resque.enqueue(LowPriorityJob)
+          end
+        rescue Test::Unit::AssertionFailedError => error
+          assert_equal "No jobs should have been queued.\n<0> expected but was\n<1>.", error.message
         end
       end
     end
