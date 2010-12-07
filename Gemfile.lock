@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    resque_unit (0.3.0)
+    resque_unit (0.3.1)
       json (~> 1.4.6)
 
 GEM

@@ -74,7 +74,11 @@ module Resque
     queue_name = queue_for(klass)
     # Behaves like Resque, raise if no queue was specifed
     raise NoQueueError.new("Jobs must be placed onto a queue.") unless queue_name
-    queue(queue_name) << {:klass => klass, :args => decode(encode(args))}
+    queue(queue_name) << {:klass => klass, :args => normalized_args(args) }
+  end
+
+  def normalized_args(args)
+    decode(encode(args))
   end
 
   # :nodoc: 
