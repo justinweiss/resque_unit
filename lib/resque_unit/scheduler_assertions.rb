@@ -38,10 +38,10 @@ module ResqueUnit::SchedulerAssertions
 
   private
 
-  def in_timestamped_queue?(queue, expected_timestamp, klass, args = nil)
+  def in_timestamped_queue?(queue_name, expected_timestamp, klass, args = nil)
     # check if we have any matching jobs with a timestamp less than
     # expected_timestamp
-    !matching_jobs(queue, klass, args).select {|e| e[:timestamp] && e[:timestamp] <= expected_timestamp}.empty?
+    !matching_jobs(Resque.queue(queue_name), klass, args).select {|e| e[:timestamp] && e[:timestamp] <= expected_timestamp}.empty?
   end
   
 end
