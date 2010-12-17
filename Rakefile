@@ -1,9 +1,16 @@
 require 'rake'
+require 'bundler'
 require 'rake/testtask'
 require 'rake/rdoctask'
 
 desc 'Default: run unit tests.'
 task :default => :test
+
+Bundler::GemHelper.install_tasks
+
+task :default => :test
+task :build => :test
+task :release => :test
 
 desc 'Test the resque_unit plugin.'
 Rake::TestTask.new(:test) do |t|
