@@ -27,7 +27,7 @@ example, if you have code that queues a resque job:
       @queue = :low  
     
       def self.perform(x)
-        // do stuff
+        # do stuff
       end
     end
     
@@ -65,11 +65,48 @@ You can also access the queues directly:
       assert_equal 1, Resque.queue(:low).length
     end
 
+Finally, you can enable hooks:
+
+    Resque.enable_hooks!
+
+    class MyJobWithHooks
+      @queue = :hooked
+
+      def self.perform(x)
+        # do stuff
+      end
+
+      def self.after_enqueue_mark(*args)
+        # called when the job is enqueued
+      end
+
+      def self.before_perform_mark(*args)
+        # called just before the +perform+ method
+      end
+
+      def self.after_perform_mark(*args)
+        # called just after the +perform+ method
+      end
+
+      def self.failure_perform_mark(*args)
+        # called if the +perform+ method raised
+      end
+
+    end
+
+    def queue_job
+      Resque.enqueue(MyJobWithHooks, 1)
+    end
+
 Caveats
 =======
 
 * You should make sure that you call `Resque.reset!` in your test's
   setup method to clear all of the test queues.
+* Hooks support is optional. Just because you probably don't want to call
+  them during unit tests if they play with a DB. Call `Resque.enable_hooks!`
+  in your tests's setup method to enable hooks. To disable hooks, call
+  `Resque.disable_hooks!`.
 
 Resque-Scheduler Support
 ========================

@@ -19,7 +19,7 @@ module ResqueUnit
     end
     
     def enqueue_with_timestamp(timestamp, klass, *args)
-      queue(queue_for(klass)) << {:klass => klass, :args => decode(encode(args)), :timestamp => timestamp}
+      enqueue_unit(queue_for(klass), {:klass => klass, :args => decode(encode(args)), :timestamp => timestamp})
     end
 
   end

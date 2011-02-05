@@ -57,6 +57,54 @@ class ResqueUnitTest < Test::Unit::TestCase
     # assert number of jobs?
   end
 
+  context "A task that schedules a resque job with hooks" do
+    setup do 
+      Resque.enable_hooks!
+      JobWithHooks.clear_markers
+      Resque.enqueue(JobWithHooks)
+    end
+
+    teardown do
+      Resque.disable_hooks!
+    end
+
+    should "have run the after_enqueue hook" do 
+      assert_queued(JobWithHooks)
+      assert(JobWithHooks.markers[:after_enqueue], 'no after_queue marker set')
+    end
+
+    should "run the before and after hooks during a run" do 
+      Resque.run!
+      assert(JobWithHooks.markers[:before], 'no before marker set')
+      assert(JobWithHooks.markers[:around], 'no around marker set')
+      assert(JobWithHooks.markers[:after], 'no after marker set')
+      assert(!JobWithHooks.markers[:failed], 'failed marker set, and it should not')
+    end
+
+    should "run the before and failed hooks during a run" do
+      JobWithHooks.make_it_fail do
+        assert_raise(RuntimeError) do
+          Resque.run!
+          assert(JobWithHooks.markers[:before], 'no before marker set')
+          assert(JobWithHooks.markers[:around], 'no around marker set')
+          assert(!JobWithHooks.markers[:after], 'after marker set, and it should not')
+          assert(JobWithHooks.markers[:failed], 'no failed marker set')
+        end
+      end
+    end
+
+    should "not call perform if the around hook raised Resque::Job::DontPerform" do
+      JobWithHooks.make_it_dont_perform do
+        Resque.run!
+        assert(JobWithHooks.markers[:before], 'no before marker set')
+        assert(JobWithHooks.markers[:around], 'no around marker set')
+        assert(!JobWithHooks.markers[:after], 'after marker set, and it should not')
+        assert(!JobWithHooks.markers[:failed], 'failed marker set, and it should not')
+      end
+    end
+
+  end
+
   context "Block assertions" do
     should "pass the assert_queued(job) assertion when queued in block" do
       assert_queues(HighPriorityJob) do
