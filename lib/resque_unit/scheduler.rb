@@ -22,6 +22,15 @@ module ResqueUnit
       enqueue_unit(queue_for(klass), {:klass => klass, :args => decode(encode(args)), :timestamp => timestamp})
     end
 
+    def remove_delayed(klass, *args)
+      queue = Resque.queue(queue_for(klass))
+      if args # retrieve the elements that match klass and args in the queue
+        args = Resque.normalized_args(args)
+        queue.delete_if { |e| e[:klass] == klass && e[:args] == args }
+      else # if no args were passed, retrieve all queued jobs that match klass
+        queue.delete_if {|e| e[:klass] == klass}
+      end
+    end
   end
 
   Resque.send(:extend, Scheduler)
