@@ -18,7 +18,11 @@ class ResqueUnitTest < Test::Unit::TestCase
 
   context "A task that schedules a resque job" do
     setup do 
-      Resque.enqueue(LowPriorityJob)
+      @returned = Resque.enqueue(LowPriorityJob)
+    end
+
+    should 'return a value that evaluates to true' do
+      assert @returned
     end
 
     should "pass the assert_queued(job) assertion" do 

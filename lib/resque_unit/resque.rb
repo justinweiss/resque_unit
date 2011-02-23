@@ -109,6 +109,7 @@ module Resque
         hash[:klass].send(hook, *hash[:args])
       end
     end
+    queue(queue_name).size
   end
 
   # Call perform on the job class
