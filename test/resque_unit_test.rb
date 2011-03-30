@@ -360,5 +360,16 @@ class ResqueUnitTest < Test::Unit::TestCase
       end
     end
   end
+  
+  context "A job inserted through Resque::Job.create" do
+    should "be added to queue" do
+      Resque::Job.create(:critical, 'MyJob')
+      assert_queued MyJob    
+    end
+  end
 
+end
+
+class MyJob
+  @queue = :critical 
 end
