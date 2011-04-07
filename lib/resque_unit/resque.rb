@@ -176,4 +176,11 @@ module Resque
     end
   end
 
+  class Job
+    extend Helpers
+    def self.create(queue, klass_name, *args)
+      Resque.enqueue_unit(queue, {:klass => constantize(klass_name), :args => decode(encode(args))})
+    end
+  end
+
 end

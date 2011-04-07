@@ -12,6 +12,7 @@ class ResqueUnitTest < Test::Unit::TestCase
     setup { Resque.enqueue(MediumPriorityJob) }
     should "pass the assert_queued(job) assertion" do
       assert_queued(MediumPriorityJob)
+      assert_job_created(MediumPriorityJob.queue, MediumPriorityJob)
       assert_equal 1, Resque.queue(MediumPriorityJob.queue).length
     end
   end
@@ -357,6 +358,15 @@ class ResqueUnitTest < Test::Unit::TestCase
     should "receive Resque::NoQueueError" do
       assert_raise(Resque::NoQueueError) do
         Resque.enqueue(JobThatDoesNotSpecifyAQueue)
+      end
+    end
+  end
+
+  context "A job that is created using Resque::Job.create" do
+    should "be queued" do
+      assert_nothing_raised do
+        Resque::Job.create(:my_custom_queue, "LowPriorityJob", "arg1", "arg2")
+        assert_job_created(:my_custom_queue, LowPriorityJob, ["arg1", "arg2"])
       end
     end
   end

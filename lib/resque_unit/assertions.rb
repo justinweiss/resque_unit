@@ -10,17 +10,7 @@ module ResqueUnit::Assertions
   # if you want to assert something was queued within its execution.
   def assert_queued(klass, args = nil, message = nil, &block)
     queue_name = Resque.queue_for(klass)
-
-    queue = if block_given?
-      snapshot = Resque.size(queue_name)
-      yield
-      Resque.queue(queue_name)[snapshot..-1]
-    else
-      Resque.queue(queue_name)
-    end
-
-    assert_with_custom_message(in_queue?(queue, klass, args),
-      message || "#{klass}#{args ? " with #{args.inspect}" : ""} should have been queued in #{queue_name}: #{queue.inspect}.")
+    assert_job_created(queue_name, klass, args, message, &block)
   end
   alias assert_queues assert_queued
 
@@ -46,6 +36,20 @@ module ResqueUnit::Assertions
     yield
     present = Resque.size
     assert_equal snapshot, present, message || "No jobs should have been queued"
+  end
+
+  # Asserts that a job was created and queued into the specified queue
+  def assert_job_created(queue_name, klass, args = nil, message = nil, &block)
+    queue = if block_given?
+      snapshot = Resque.size(queue_name)
+      yield
+      Resque.queue(queue_name)[snapshot..-1]
+    else
+      Resque.queue(queue_name)
+    end
+
+    assert_with_custom_message(in_queue?(queue, klass, args),
+      message || "#{klass}#{args ? " with #{args.inspect}" : ""} should have been queued in #{queue_name}: #{queue.inspect}.")
   end
 
   private
