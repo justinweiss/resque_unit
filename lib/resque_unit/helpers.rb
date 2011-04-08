@@ -27,6 +27,13 @@ module Resque
       end
     end
 
+    # Given a word with dashes, returns a camel cased version of it.
+    #
+    # classify('job-name') # => 'JobName'
+    def classify(dashed_word)
+      dashed_word.split('-').each { |part| part[0] = part[0].chr.upcase }.join
+    end
+
     # Given a camel cased word, returns the constant it represents
     #
     # constantize('JobName') # => JobName

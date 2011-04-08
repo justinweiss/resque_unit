@@ -369,6 +369,13 @@ class ResqueUnitTest < Test::Unit::TestCase
         assert_job_created(:my_custom_queue, LowPriorityJob, ["arg1", "arg2"])
       end
     end
+
+    should "queue a job with a dasherized name" do
+      assert_nothing_raised do
+        Resque::Job.create(:my_custom_queue, "low-priority-job", "arg1", "arg2")
+        assert_job_created(:my_custom_queue, LowPriorityJob, ["arg1", "arg2"])
+      end
+    end
   end
 
 end
