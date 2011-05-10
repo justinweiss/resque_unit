@@ -31,6 +31,27 @@ module Resque
     queues[queue_name]
   end
 
+  # Returns an array of jobs' payloads currently queued.
+  #
+  # start and count should be integer and can be used for pagination.
+  # start is the item to begin, count is how many items to return.
+  #
+  # To get the 3rd page of a 30 item, paginatied list one would use:
+  #   Resque.peek('my_list', 59, 30)
+  def peek(queue_name, start = 0, count = 1)
+    list_range(queue_name, start, count)
+  end
+
+  # Gets a range of jobs' payloads from queue.
+  # Returns single element if count equal 1
+  def list_range(key, start = 0, count = 1)
+    if count == 1
+      queues[key][start]
+    else
+      queues[key][start...start + count] || []
+    end
+  end
+
   # Yes, all Resque hooks!
   def enable_hooks!
     @hooks_enabled = true
