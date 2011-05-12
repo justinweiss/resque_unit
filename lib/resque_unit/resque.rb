@@ -115,7 +115,7 @@ module Resque
     queue_name = queue_for(klass)
     # Behaves like Resque, raise if no queue was specifed
     raise NoQueueError.new("Jobs must be placed onto a queue.") unless queue_name
-    enqueue_unit(queue_name, {"class" => klass, "args" => args })
+    enqueue_unit(queue_name, {"class" => klass.name, "args" => args })
   end
 
   # :nodoc: 
@@ -131,10 +131,11 @@ module Resque
   end
 
   def enqueue_unit(queue_name, hash)
+    klass = constantize(hash["class"])
     queue(queue_name) << encode(hash)
     if @hooks_enabled
-      Plugin.after_enqueue_hooks(hash["class"]).each do |hook|
-        hash["class"].send(hook, *hash["args"])
+      Plugin.after_enqueue_hooks(klass).each do |hook|
+        klass.send(hook, *hash["args"])
       end
     end
     queue(queue_name).size
