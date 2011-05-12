@@ -24,14 +24,21 @@ module Resque
   end
 
   # Returns an array of all the jobs that have been queued. Each
-  # element is of the form +{:klass => klass, :args => args}+ where
+  # element is of the form +{"class" => klass, "args" => args}+ where
   # +klass+ is the job's class and +args+ is an array of the arguments
   # passed to the job.
   def queue(queue_name)
     queues[queue_name]
   end
 
-  # Returns an array of jobs' payloads currently queued.
+  # Return an array of all jobs' payloads for queue
+  # Elements are decoded
+  def all(queue_name)
+    result = list_range(queue_name, 0, size(queue_name))
+    result.is_a?(Array) ? result : [ result ]
+  end
+
+  # Returns an array of jobs' payloads for queue.
   #
   # start and count should be integer and can be used for pagination.
   # start is the item to begin, count is how many items to return.
@@ -44,12 +51,14 @@ module Resque
 
   # Gets a range of jobs' payloads from queue.
   # Returns single element if count equal 1
+  # Elements are decoded
   def list_range(key, start = 0, count = 1)
-    if count == 1
+    data = if count == 1
       queues[key][start]
     else
       queues[key][start...start + count] || []
     end
+    decode(data)
   end
 
   # Yes, all Resque hooks!
@@ -66,20 +75,22 @@ module Resque
     old_queue = @queue.dup
     self.reset!
 
-    old_queue.each do |k, v|
-      while job = v.shift
-        @hooks_enabled ? perform_with_hooks(job) : perform_without_hooks(job)
+
+    old_queue.each do |queue_name, queue|
+      decode(queue).each do |job_payload|
+        @hooks_enabled ? perform_with_hooks(job_payload) : perform_without_hooks(job_payload)
       end
     end
   end
 
   # Executes all jobs in the given queue in an undefined order.
   def run_for!(queue_name)
-    jobs = self.queue(queue_name)
+    jobs_payloads = all(queue_name)
+
     self.reset!(queue_name)
 
-    while job = jobs.shift
-      @hooks_enabled ? perform_with_hooks(job) : perform_without_hooks(job)
+    jobs_payloads.each do |job_payload|
+      @hooks_enabled ? perform_with_hooks(job_payload) : perform_without_hooks(job_payload)
     end
   end
 
@@ -104,11 +115,7 @@ module Resque
     queue_name = queue_for(klass)
     # Behaves like Resque, raise if no queue was specifed
     raise NoQueueError.new("Jobs must be placed onto a queue.") unless queue_name
-    enqueue_unit(queue_name, {:klass => klass, :args => normalized_args(args) })
-  end
-
-  def normalized_args(args)
-    decode(encode(args))
+    enqueue_unit(queue_name, {"class" => klass, "args" => args })
   end
 
   # :nodoc: 
@@ -124,33 +131,34 @@ module Resque
   end
 
   def enqueue_unit(queue_name, hash)
-    queue(queue_name) << hash
+    queue(queue_name) << encode(hash)
     if @hooks_enabled
-      Plugin.after_enqueue_hooks(hash[:klass]).each do |hook|
-        hash[:klass].send(hook, *hash[:args])
+      Plugin.after_enqueue_hooks(hash["class"]).each do |hook|
+        hash["class"].send(hook, *hash["args"])
       end
     end
     queue(queue_name).size
   end
 
   # Call perform on the job class
-  def perform_without_hooks(job)
-    job[:klass].perform(*job[:args])
+  def perform_without_hooks(job_payload)
+    constantize(job_payload["class"]).perform(*job_payload["args"])
   end
 
   # Call perform on the job class, and adds support for Resque hooks.
-  def perform_with_hooks(job)
-    before_hooks  = Resque::Plugin.before_hooks(job[:klass])
-    around_hooks  = Resque::Plugin.around_hooks(job[:klass])
-    after_hooks   = Resque::Plugin.after_hooks(job[:klass])
-    failure_hooks = Resque::Plugin.failure_hooks(job[:klass])
+  def perform_with_hooks(job_payload)
+    job_class = constantize(job_payload["class"])
+    before_hooks  = Resque::Plugin.before_hooks(job_class)
+    around_hooks  = Resque::Plugin.around_hooks(job_class)
+    after_hooks   = Resque::Plugin.after_hooks(job_class)
+    failure_hooks = Resque::Plugin.failure_hooks(job_class)
     
     begin
       # Execute before_perform hook. Abort the job gracefully if
       # Resque::DontPerform is raised.
       begin
         before_hooks.each do |hook|
-          job[:klass].send(hook, *job[:args])
+          job_class.send(hook, *job_payload["args"])
         end
       rescue Resque::Job::DontPerform
         return false
@@ -158,7 +166,7 @@ module Resque
       
       # Execute the job. Do it in an around_perform hook if available.
       if around_hooks.empty?
-        perform_without_hooks(job)
+        perform_without_hooks(job_payload)
         job_was_performed = true
       else
         # We want to nest all around_perform plugins, with the last one
@@ -166,12 +174,12 @@ module Resque
         stack = around_hooks.reverse.inject(nil) do |last_hook, hook|
           if last_hook
             lambda do
-              job[:klass].send(hook, *job[:args]) { last_hook.call }
+              job_class.send(hook, *job_payload["args"]) { last_hook.call }
             end
           else
             lambda do
-              job[:klass].send(hook, *job[:args]) do
-                result = perform_without_hooks(job)
+              job_class.send(hook, *job_payload["args"]) do
+                result = perform_without_hooks(job_payload)
                 job_was_performed = true
                 result
               end
@@ -183,7 +191,7 @@ module Resque
       
       # Execute after_perform hook
       after_hooks.each do |hook|
-        job[:klass].send(hook, *job[:args])
+        job_class.send(hook, *job_payload["args"])
       end
       
       # Return true if the job was performed
@@ -192,7 +200,7 @@ module Resque
     # If an exception occurs during the job execution, look for an
     # on_failure hook then re-raise.
     rescue => e
-      failure_hooks.each { |hook| job[:klass].send(hook, e, *job[:args]) }
+      failure_hooks.each { |hook| job_class.send(hook, e, *job_payload["args"]) }
       raise e
     end
   end
@@ -200,7 +208,7 @@ module Resque
   class Job
     extend Helpers
     def self.create(queue, klass_name, *args)
-      Resque.enqueue_unit(queue, {:klass => constantize(klass_name), :args => decode(encode(args))})
+      Resque.enqueue_unit(queue, {"class" => constantize(klass_name), "args" => args})
     end
   end
 

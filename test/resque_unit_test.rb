@@ -65,49 +65,77 @@ class ResqueUnitTest < Test::Unit::TestCase
   context "A task that schedules a resque job with hooks" do
     setup do 
       Resque.enable_hooks!
-      JobWithHooks.clear_markers
-      Resque.enqueue(JobWithHooks)
     end
 
     teardown do
       Resque.disable_hooks!
     end
 
-    should "have run the after_enqueue hook" do 
-      assert_queued(JobWithHooks)
-      assert(JobWithHooks.markers[:after_enqueue], 'no after_queue marker set')
-    end
+    context "before, around, after, failure, after_enqueue" do
+      setup do 
+        JobWithHooks.clear_markers
+        Resque.enqueue(JobWithHooks)
+      end
 
-    should "run the before and after hooks during a run" do 
-      Resque.run!
-      assert(JobWithHooks.markers[:before], 'no before marker set')
-      assert(JobWithHooks.markers[:around], 'no around marker set')
-      assert(JobWithHooks.markers[:after], 'no after marker set')
-      assert(!JobWithHooks.markers[:failed], 'failed marker set, and it should not')
-    end
+      should "have run the after_enqueue hook" do 
+        assert_queued(JobWithHooks)
+        assert(JobWithHooks.markers[:after_enqueue], 'no after_queue marker set')
+      end
 
-    should "run the before and failed hooks during a run" do
-      JobWithHooks.make_it_fail do
-        assert_raise(RuntimeError) do
+      should "run the before and after hooks during a run" do 
+        Resque.run!
+        assert(JobWithHooks.markers[:before], 'no before marker set')
+        assert(JobWithHooks.markers[:around], 'no around marker set')
+        assert(JobWithHooks.markers[:after], 'no after marker set')
+        assert(!JobWithHooks.markers[:failed], 'failed marker set, and it should not')
+      end
+
+      should "run the before and failed hooks during a run" do
+        JobWithHooks.make_it_fail do
+          assert_raise(RuntimeError) do
+            Resque.run!
+            assert(JobWithHooks.markers[:before], 'no before marker set')
+            assert(JobWithHooks.markers[:around], 'no around marker set')
+            assert(!JobWithHooks.markers[:after], 'after marker set, and it should not')
+            assert(JobWithHooks.markers[:failed], 'no failed marker set')
+          end
+        end
+      end
+
+      should "not call perform if the around hook raised Resque::Job::DontPerform" do
+        JobWithHooks.make_it_dont_perform do
           Resque.run!
           assert(JobWithHooks.markers[:before], 'no before marker set')
           assert(JobWithHooks.markers[:around], 'no around marker set')
           assert(!JobWithHooks.markers[:after], 'after marker set, and it should not')
-          assert(JobWithHooks.markers[:failed], 'no failed marker set')
+          assert(!JobWithHooks.markers[:failed], 'failed marker set, and it should not')
         end
       end
     end
 
-    should "not call perform if the around hook raised Resque::Job::DontPerform" do
-      JobWithHooks.make_it_dont_perform do
+    context "but without before" do
+      setup do
+        JobWithHooksWithoutBefore.clear_markers
+        Resque.enqueue(JobWithHooksWithoutBefore)
+      end
+
+      should "not run before hooks during a run" do
         Resque.run!
-        assert(JobWithHooks.markers[:before], 'no before marker set')
-        assert(JobWithHooks.markers[:around], 'no around marker set')
-        assert(!JobWithHooks.markers[:after], 'after marker set, and it should not')
-        assert(!JobWithHooks.markers[:failed], 'failed marker set, and it should not')
+        assert(!JobWithHooksWithoutBefore.markers[:before], 'before marker set, and it should not')
       end
     end
 
+    context "but without around" do
+      setup do
+        JobWithHooksWithoutAround.clear_markers
+        Resque.enqueue(JobWithHooksWithoutAround)
+      end
+
+      should "not run around hooks during a run" do
+        Resque.run!
+        assert(!JobWithHooksWithoutAround.markers[:around], 'around marker set, and it should not')
+      end
+    end
   end
 
   context "Block assertions" do
@@ -117,14 +145,14 @@ class ResqueUnitTest < Test::Unit::TestCase
       end
     end
 
-    should "pass the assert_queued(job) assertion when queued and not in block" do
+    should "pass the assert_queued(job) assertion when queued in block and outside" do
       Resque.enqueue(HighPriorityJob)
       assert_queues(HighPriorityJob) do
         Resque.enqueue(HighPriorityJob)
       end
     end
 
-    should "fail the assert_queued(job) assertion when not queued in block" do
+    should "fail the assert_queued(job) assertion when not queued in block but outside" do
       Resque.enqueue(LowPriorityJob)
       assert_raise Test::Unit::AssertionFailedError do
         assert_queues(LowPriorityJob) do
@@ -199,7 +227,7 @@ class ResqueUnitTest < Test::Unit::TestCase
     end
     
     should "pass the assert_queued(job, *args) assertion if the args match using symbols" do
-      assert_queued(JobWithArguments, [1, :test, {:symbol => :symbol}])
+      assert_queued(JobWithArguments, [1, "test", {"symbol" => "symbol"}])
     end
 
     should "pass the assert_queued(job) assertion with no args passed" do

@@ -1,5 +1,7 @@
 # These are a group of assertions you can use in your unit tests to
 # verify that your code is using resque-scheduler correctly.
+require 'time'
+
 module ResqueUnit::SchedulerAssertions
   
   # Asserts that +klass+ has been queued into its appropriate queue at
@@ -41,7 +43,7 @@ module ResqueUnit::SchedulerAssertions
   def in_timestamped_queue?(queue_name, expected_timestamp, klass, args = nil)
     # check if we have any matching jobs with a timestamp less than
     # expected_timestamp
-    !matching_jobs(Resque.queue(queue_name), klass, args).select {|e| e[:timestamp] && e[:timestamp] <= expected_timestamp}.empty?
+    !matching_jobs(Resque.all(queue_name), klass, args).select {|e| e["timestamp"] && Time.parse(e["timestamp"]) <= expected_timestamp}.empty?
   end
   
 end
