@@ -54,11 +54,10 @@ module Resque
   # Elements are decoded
   def list_range(key, start = 0, count = 1)
     data = if count == 1
-      queues[key][start]
+      decode(queues[key][start])
     else
-      queues[key][start...start + count] || []
+      (queues[key][start...start + count] || []).map { |entry| decode(entry) }
     end
-    decode(data)
   end
 
   # Yes, all Resque hooks!
@@ -77,7 +76,8 @@ module Resque
 
 
     old_queue.each do |queue_name, queue|
-      decode(queue).each do |job_payload|
+      queue.each do |job_payload|
+        job_payload = decode(job_payload)
         @hooks_enabled ? perform_with_hooks(job_payload) : perform_without_hooks(job_payload)
       end
     end
