@@ -3,6 +3,9 @@ module Resque
     # Given a Ruby object, returns a string suitable for storage in a
     # queue.
     def encode(object)
+      if object.is_a?(Array)
+        return object.map{|o| encode(o) }
+      end
       if defined? Yajl
         Yajl::Encoder.encode(object)
       else
@@ -13,6 +16,9 @@ module Resque
     # Given a string, returns a Ruby object.
     def decode(object)
       return unless object
+      if object.is_a?(Array)
+        return object.map{|o| decode(o) }
+      end
 
       if defined? Yajl
         begin

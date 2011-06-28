@@ -21,9 +21,9 @@ module ResqueUnit::Assertions
     queue = if block_given?
       snapshot = Resque.size(queue_name)
       yield
-      Resque.queue(queue_name)[snapshot..-1]
+      Resque.all(queue_name)[snapshot..-1]
     else
-      Resque.queue(queue_name)
+      Resque.all(queue_name)
     end
 
     assert_with_custom_message(!in_queue?(queue, klass, args),
@@ -43,9 +43,9 @@ module ResqueUnit::Assertions
     queue = if block_given?
       snapshot = Resque.size(queue_name)
       yield
-      Resque.queue(queue_name)[snapshot..-1]
+      Resque.all(queue_name)[snapshot..-1]
     else
-      Resque.queue(queue_name)
+      Resque.all(queue_name)
     end
 
     assert_with_custom_message(in_queue?(queue, klass, args),
@@ -74,13 +74,7 @@ module ResqueUnit::Assertions
   end
 
   def matching_jobs(queue, klass, args = nil)
-    queue = Resque.queue(queue) if queue.is_a? Symbol
-    if args # retrieve the elements that match klass and args in the queue
-      args = Resque.normalized_args(args)
-      queue.select {|e| e[:klass] == klass && e[:args] == args}
-    else # if no args were passed, retrieve all queued jobs that match klass
-      queue.select {|e| e[:klass] == klass}
-    end
+    queue.select {|e| e["class"] == klass.to_s && (!args || e["args"] == Resque.decode(Resque.encode(args)))}
   end
 
 end

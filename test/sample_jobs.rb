@@ -49,10 +49,26 @@ class JobThatDoesNotSpecifyAQueue
   end
 end
 
+module HooksMethods
+  def after_enqueue_mark(*args)
+    markers[:after_enqueue] = true
+  end
+  
+  def after_perform_mark(*args)
+    markers[:after] = true
+  end
+  
+  def failure_perform_mark(*args)
+    markers[:failure] = true
+  end
+end
+
 class JobWithHooks
+  extend HooksMethods
+
   @queue = :with_hooks
   @markers = {}
-  
+
   def self.perform
     raise 'FAIL!' if @will_fail
   end
@@ -63,10 +79,6 @@ class JobWithHooks
   
   def self.clear_markers
     @markers = {}
-  end
-  
-  def self.after_enqueue_mark(*args)
-    markers[:after_enqueue] = true
   end
   
   def self.before_perform_mark(*args)
@@ -82,14 +94,6 @@ class JobWithHooks
     end
   end
   
-  def self.after_perform_mark(*args)
-    markers[:after] = true
-  end
-  
-  def self.failure_perform_mark(*args)
-    markers[:failure] = true
-  end
-  
   def self.make_it_fail(&block)
     @will_fail = true
     yield
@@ -102,5 +106,51 @@ class JobWithHooks
   ensure
     @dont_perform = false
   end
+end
+
+class JobWithHooksWithoutBefore
+  extend HooksMethods
+
+  @queue = :with_hooks
+  @markers = {}
+
+  def self.markers
+    @markers
+  end
   
+  def self.clear_markers
+    @markers = {}
+  end
+  
+  def self.perform; end
+
+  def self.around_perform_mark(*args)
+    markers[:around] = true
+    if @dont_perform
+      raise Resque::Job::DontPerform
+    else
+      yield
+    end
+  end
+end
+
+class JobWithHooksWithoutAround
+  extend HooksMethods
+
+  @queue = :with_hooks
+  @markers = {}
+
+  def self.markers
+    @markers
+  end
+  
+  def self.clear_markers
+    @markers = {}
+  end
+
+  def self.perform; end
+  
+  def self.before_perform_mark(*args)
+    markers[:before] = true
+  end
 end
