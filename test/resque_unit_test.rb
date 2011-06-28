@@ -227,7 +227,7 @@ class ResqueUnitTest < Test::Unit::TestCase
     end
     
     should "pass the assert_queued(job, *args) assertion if the args match using symbols" do
-      assert_queued(JobWithArguments, [1, "test", {"symbol" => "symbol"}])
+      assert_queued(JobWithArguments, [1, :test, {:symbol => :symbol}])
     end
 
     should "pass the assert_queued(job) assertion with no args passed" do

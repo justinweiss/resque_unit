@@ -74,7 +74,7 @@ module ResqueUnit::Assertions
   end
 
   def matching_jobs(queue, klass, args = nil)
-    queue.select {|e| e["class"] == klass.to_s && (!args || e["args"] == args)}
+    queue.select {|e| e["class"] == klass.to_s && (!args || e["args"] == Resque.decode(Resque.encode(args)))}
   end
 
 end
