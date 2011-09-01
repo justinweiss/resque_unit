@@ -1,3 +1,5 @@
+require 'set'
+
 # These are a group of assertions you can use in your unit tests to
 # verify that your code is using Resque correctly.
 module ResqueUnit::Assertions
@@ -14,6 +16,12 @@ module ResqueUnit::Assertions
   end
   alias assert_queues assert_queued
 
+  def assert_queued_partial(klass, args = nil, message = nil, &block)
+    queue_name = Resque.queue_for(klass)
+    assert_job_created_partial(queue_name, klass, args, message, &block)
+  end
+  alias assert_queues_partial assert_queued_partial
+    
   # The opposite of +assert_queued+.
   def assert_not_queued(klass = nil, args = nil, message = nil, &block)
     queue_name = Resque.queue_for(klass)
@@ -52,6 +60,19 @@ module ResqueUnit::Assertions
       message || "#{klass}#{args ? " with #{args.inspect}" : ""} should have been queued in #{queue_name}: #{queue.inspect}.")
   end
 
+  def assert_job_created_partial(queue_name, klass, args = nil, message = nil, &block)
+    queue = if block_given?
+      snapshot = Resque.size(queue_name)
+      yield
+      Resque.all(queue_name)[snapshot..-1]
+    else
+      Resque.all(queue_name)
+    end
+
+    assert_with_custom_message(in_queue_partial?(queue, klass, args),
+      message || "#{klass}#{args ? " with #{args.inspect}" : ""} should have been queued in #{queue_name}: #{queue.inspect}.")
+  end
+  
   private
 
   # In Test::Unit, +assert_block+ displays only the message on a test
@@ -72,10 +93,19 @@ module ResqueUnit::Assertions
   def in_queue?(queue, klass, args = nil)
     !matching_jobs(queue, klass, args).empty?
   end
+  
+  def in_queue_partial?(queue, klass, args = nil)
+    !matching_jobs_partial(queue, klass, args).empty?
+  end
 
   def matching_jobs(queue, klass, args = nil)
     normalized_args = Resque.decode(Resque.encode(args)) if args
     queue.select {|e| e["class"] == klass.to_s && (!args || e["args"] == normalized_args )}
+  end
+  
+  def matching_jobs_partial(queue, klass, args = nil)
+    normalized_args = Resque.decode(Resque.encode(args)).to_set if args
+    queue.select {|e| e["class"] == klass.to_s && (!args || normalized_args.subset?(e["args"][0].to_set) )}
   end
 
 end
