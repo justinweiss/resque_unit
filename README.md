@@ -35,6 +35,10 @@ example, if you have code that queues a resque job:
       Resque.enqueue(MyJob, 1)
     end
 
+    def queue_job_2_arguments
+        Resque.enqueue(MyJob, {:arg1 => 1, :arg2 => 2})
+    end
+
 You can write a unit test for code that queues this job:
 
     def test_job_queued
@@ -48,6 +52,14 @@ You can also verify that a job was queued with arguments:
       queue_job
       assert_queued(MyJob, [1])
     end
+
+Or that at least some of the arguments were present:
+
+    def test_job_queued_with_arguments
+      queue_job_2_arguments
+      assert_queued_partial(MyJob, {:arg1 => value1})
+    end
+
 
 And you can run all the jobs in the queue, so you can verify that they
 run correctly:

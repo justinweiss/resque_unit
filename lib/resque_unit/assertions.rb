@@ -37,7 +37,13 @@ module ResqueUnit::Assertions
     assert_with_custom_message(!in_queue?(queue, klass, args),
       message || "#{klass}#{args ? " with #{args.inspect}" : ""} should not have been queued in #{queue_name}.")
   end
-
+  
+  # assert that a job was created and queued into the specific queue with at least the given arguments different from what's given
+  def assert_not_queued_partial(klass, args = nil, message = nil, &block)
+    queue_name = Resque.queue_for(klass)
+    assert_job_not_created_partial(queue_name, klass, args, message, &block)
+  end
+  
   # Asserts no jobs were queued within the block passed.
   def assert_nothing_queued(message = nil, &block)
     snapshot = Resque.size
@@ -73,6 +79,19 @@ module ResqueUnit::Assertions
       message || "#{klass}#{args ? " with #{args.inspect}" : ""} should have been queued in #{queue_name}: #{queue.inspect}.")
   end
   
+  def assert_job_not_created_partial(queue_name, klass, args = nil, message = nil, &block)
+    queue = if block_given?
+      snapshot = Resque.size(queue_name)
+      yield
+      Resque.all(queue_name)[snapshot..-1]
+    else
+      Resque.all(queue_name)
+    end
+    
+    assert_with_custom_message(!in_queue_partial?(queue, klass, args),
+      message || "#{klass}#{args ? " with #{args.inspect}" : ""} should not have been queued in #{queue_name}: #{queue.inspect}.")
+  end
+  
   private
 
   # In Test::Unit, +assert_block+ displays only the message on a test
@@ -105,7 +124,7 @@ module ResqueUnit::Assertions
   
   def matching_jobs_partial(queue, klass, args = nil)
     normalized_args = Resque.decode(Resque.encode(args)).to_set if args
-    queue.select {|e| e["class"] == klass.to_s && (!args || normalized_args.subset?(e["args"][0].to_set) )}
+    queue.select {|e| e["class"] == klass.to_s && (!args || normalized_args.subset?(e["args"][0].to_set) ) }
   end
 
 end

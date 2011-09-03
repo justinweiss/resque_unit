@@ -17,6 +17,38 @@ class ResqueUnitTest < Test::Unit::TestCase
     end
   end
 
+  context "A task that schedules a reqsue job, tested using some of the arguments" do
+    setup { Resque.enqueue(MediumPriorityJob, {:arg1 => "1", :arg2 => "2"}) }
+    should "pass the assert_queued_partial(job) assertion" do
+      assert_queued_partial(MediumPriorityJob,{:arg1 => "1"})
+    end
+  end
+  
+  context "A task that schedules a reqsue job, tested using some of the arguments and fails" do
+    setup { Resque.enqueue(MediumPriorityJob, {:arg1 => "1", :arg2 => "2"}) }
+    should "fail the assert_queued_partial(job) assertion" do
+      assert_raise Test::Unit::AssertionFailedError do 
+        assert_queued_partial(MediumPriorityJob,{:arg1 => "2"})
+      end
+    end
+  end
+  
+  context "A task that schedules a reqsue job, tested using none of the arguments" do
+    setup { Resque.enqueue(MediumPriorityJob, {:arg1 => "1", :arg2 => "2"}) }
+    should "pass the assert_queued_partial(job) assertion" do
+      assert_not_queued_partial(MediumPriorityJob,{:arg1 => "2"})
+    end
+  end
+  
+  context "A task that schedules a reqsue job, tested using some of the arguments" do
+    setup { Resque.enqueue(MediumPriorityJob, {:arg1 => "1", :arg2 => "2"}) }
+    should "fail the assert_queued_partial(job) assertion" do
+      assert_raise Test::Unit::AssertionFailedError do 
+        assert_not_queued_partial(MediumPriorityJob,{:arg1 => "1"})
+      end
+    end
+  end
+  
   context "A task that schedules a resque job" do
     setup do 
       @returned = Resque.enqueue(LowPriorityJob)
@@ -405,5 +437,5 @@ class ResqueUnitTest < Test::Unit::TestCase
       end
     end
   end
-
+  
 end
