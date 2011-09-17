@@ -113,18 +113,28 @@ module ResqueUnit::Assertions
     !matching_jobs(queue, klass, args).empty?
   end
   
-  def in_queue_partial?(queue, klass, args = nil)
-    !matching_jobs_partial(queue, klass, args).empty?
-  end
-
   def matching_jobs(queue, klass, args = nil)
     normalized_args = Resque.decode(Resque.encode(args)) if args
     queue.select {|e| e["class"] == klass.to_s && (!args || e["args"] == normalized_args )}
   end
   
-  def matching_jobs_partial(queue, klass, args = nil)
+  def in_queue_partial?(queue, klass, args = nil)
     normalized_args = Resque.decode(Resque.encode(args)).to_set if args
-    queue.select {|e| e["class"] == klass.to_s && (!args || normalized_args.subset?(e["args"][0].to_set) ) }
+    
+    queue.each do |e| 
+       if e["class"] == klass.to_s then
+         if args
+           return true if normalized_args.subset?(e["args"].to_set) 
+           e["args"].each do |current_arg|
+             return true if (current_arg.is_a?(Array) || current_arg.is_a?(Hash)) && normalized_args.subset?(current_arg.to_set) 
+           end
+         else
+           return true
+         end
+       end
+    end
+    
+    false
   end
 
 end
