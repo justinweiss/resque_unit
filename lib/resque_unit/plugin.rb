@@ -52,7 +52,7 @@ unless defined?(Resque::Plugin)
         job.methods.grep(/^after_enqueue/).sort
       end
 
-      # Given an object, returns a list `after_enqueue` hook names.
+      # Given an object, returns a list `before_enqueue` hook names.
       def before_enqueue_hooks(job)
         job.methods.grep(/^before_enqueue/).sort
       end
