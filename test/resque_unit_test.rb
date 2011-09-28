@@ -17,6 +17,30 @@ class ResqueUnitTest < Test::Unit::TestCase
     end
   end
 
+  context "A task that spawns multiple jobs on a single queue" do
+    setup do 
+      3.times {Resque.enqueue(HighPriorityJob)}
+    end
+
+    should "allow partial runs with explicit limit" do
+      assert_equal 3, Resque.queue(:high).length, 'failed setup'
+      Resque.run_for!( :high, 1 )
+      assert_equal 2, Resque.queue(:high).length, 'failed to run just single job'
+    end
+
+    should "allow full run with too-large explicit limit" do
+      assert_equal 3, Resque.queue(:high).length, 'failed setup'
+      Resque.run_for!( :high, 50 )
+      assert_equal 0, Resque.queue(:high).length, 'failed to run all jobs'
+    end
+
+    should "allow full run with implicit limit" do
+      assert_equal 3, Resque.queue(:high).length, 'failed setup'
+      Resque.run_for!( :high )
+      assert_equal 0, Resque.queue(:high).length, 'failed to run all jobs'
+    end
+  end
+
   context "A task that schedules a resque job" do
     setup do 
       @returned = Resque.enqueue(LowPriorityJob)
