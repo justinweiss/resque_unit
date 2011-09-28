@@ -132,6 +132,12 @@ module Resque
 
   def enqueue_unit(queue_name, hash)
     klass = constantize(hash["class"])
+    if @hooks_enabled
+      before_hooks = Plugin.before_enqueue_hooks(klass).map do |hook|
+        klass.send(hook, *hash["args"])
+      end
+      return nil if before_hooks.any? { |result| result == false }
+    end
     queue(queue_name) << encode(hash)
     if @hooks_enabled
       Plugin.after_enqueue_hooks(klass).each do |hook|
