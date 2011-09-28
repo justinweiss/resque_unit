@@ -112,10 +112,10 @@ class JobWithHooks
   end
 end
 
-class JobWithHooksBeforeEnqueueRaises < JobWithHooks
+class JobWithHooksBeforeBlocks < JobWithHooks
   @queue = :with_hooks
-  def self.before_enqueue_raise_hell
-    raise Exception
+  def self.before_enqueue_block_enqueueing
+    return false
   end
 end
 

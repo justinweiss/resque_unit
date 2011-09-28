@@ -130,16 +130,14 @@ class ResqueUnitTest < Test::Unit::TestCase
       end
     end
 
-    context "when before_enqueue raises" do
+    context "when before_enqueue returns false" do
       setup do
-        JobWithHooksBeforeEnqueueRaises.clear_markers
+        JobWithHooksBeforeBlocks.clear_markers
       end
 
       should "not queue" do
-        assert_raise Exception, 'exception not raised' do
-          Resque.enqueue JobWithHooksBeforeEnqueueRaises
-        end
-        assert_not_queued JobWithHooksBeforeEnqueueRaises
+        Resque.enqueue JobWithHooksBeforeBlocks
+        assert_not_queued JobWithHooksBeforeBlocks
       end
 
     end
