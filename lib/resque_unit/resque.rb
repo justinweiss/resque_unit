@@ -112,7 +112,11 @@ module Resque
 
   # :nodoc: 
   def enqueue(klass, *args)
-    queue_name = queue_for(klass)
+    enqueue_to( queue_for(klass), klass, *args)
+  end
+
+  # :nodoc:
+  def enqueue_to( queue_name, klass, *args )
     # Behaves like Resque, raise if no queue was specifed
     raise NoQueueError.new("Jobs must be placed onto a queue.") unless queue_name
     enqueue_unit(queue_name, {"class" => klass.name, "args" => args })
@@ -122,6 +126,7 @@ module Resque
   def queue_for(klass)
     klass.instance_variable_get(:@queue) || (klass.respond_to?(:queue) && klass.queue)
   end
+  alias :queue_from_class :queue_for
 
   # :nodoc:
   def empty_queues?
