@@ -82,6 +82,11 @@ class ResqueUnitTest < Test::Unit::TestCase
         assert(JobWithHooks.markers[:after_enqueue], 'no after_queue marker set')
       end
 
+      should "have run the before_enqueue hook" do 
+        assert(JobWithHooks.markers[:before_enqueue], 'no before_queue marker set')
+        assert_queued(JobWithHooks)
+      end
+
       should "run the before and after hooks during a run" do 
         Resque.run!
         assert(JobWithHooks.markers[:before], 'no before marker set')
@@ -123,6 +128,18 @@ class ResqueUnitTest < Test::Unit::TestCase
         Resque.run!
         assert(!JobWithHooksWithoutBefore.markers[:before], 'before marker set, and it should not')
       end
+    end
+
+    context "when before_enqueue returns false" do
+      setup do
+        JobWithHooksBeforeBlocks.clear_markers
+      end
+
+      should "not queue" do
+        Resque.enqueue JobWithHooksBeforeBlocks
+        assert_not_queued JobWithHooksBeforeBlocks
+      end
+
     end
 
     context "but without around" do
