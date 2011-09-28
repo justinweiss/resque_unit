@@ -17,6 +17,16 @@ class ResqueUnitTest < Test::Unit::TestCase
     end
   end
 
+  context "A task that explicitly is queued to a different queue" do
+    setup { Resque.enqueue_to(:a_non_class_determined_queue, MediumPriorityJob) }
+    should "not queue to the class-determined queue" do
+      assert_equal 0, Resque.queue(MediumPriorityJob.queue).length
+    end
+    should "queue to the explicly-stated queue" do
+      assert_equal 1, Resque.queue(:a_non_class_determined_queue).length
+    end
+  end
+
   context "A task that schedules a resque job" do
     setup do 
       @returned = Resque.enqueue(LowPriorityJob)
