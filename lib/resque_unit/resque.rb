@@ -75,21 +75,21 @@ module Resque
     @queue.each do |queue_name, queue|
       payloads.concat queue.slice!(0, queue.size)
     end
-    _exec_payloads payloads.shuffle
+    exec_payloads payloads.shuffle
   end
 
   def run_for!(queue_name, limit=false)
     queue = @queue[queue_name]
-    _exec_payloads queue.slice!(0, ( limit ? limit : queue.size) ).shuffle
+    exec_payloads queue.slice!(0, ( limit ? limit : queue.size) ).shuffle
   end
 
-  def _exec_payloads(raw_payloads)
+  def exec_payloads(raw_payloads)
     raw_payloads.each do |raw_payload|
       job_payload = decode(raw_payload)
       @hooks_enabled ? perform_with_hooks(job_payload) : perform_without_hooks(job_payload)
     end
   end
-  private :_exec_payloads
+  private :exec_payloads
 
   # 1. Execute all jobs in all queues in an undefined order,
   # 2. Check if new jobs were announced, and execute them.
