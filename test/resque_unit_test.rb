@@ -457,4 +457,15 @@ class ResqueUnitTest < Test::Unit::TestCase
     end
   end
 
+  context "A plugin using Redis" do
+    should "use an instance of MockRedis" do
+      assert_instance_of MockRedis, Resque.redis
+    end
+
+    should "use an instance of MockRedis even if Resque tries to configure Redis" do
+      Resque.redis = 'lol'
+      assert_instance_of MockRedis, Resque.redis
+    end
+  end
+
 end

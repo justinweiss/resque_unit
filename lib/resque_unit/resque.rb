@@ -4,12 +4,30 @@ module Resque
   include Helpers
   extend self
 
+  # When Resque tries to configure Redis, it just initialize an instance
+  # of MockRedis.
+  # Not meant to mock the main Resque features, just here for plugins.
+  def redis=(*args)
+    redis
+  end
+
+  # Returns the current Redis mocked connection. If none has been created,
+  # will create a new one.
+  # Not meant to mock the main Resque features, just here for plugins.
+  def redis
+    @redis = MockRedis.new unless @redis.is_a?(MockRedis)
+    @redis ||= MockRedis.new
+  end
+
   # Resets all the queues to the empty state. This should be called in
   # your test's +setup+ method until I can figure out a way for it to
   # automatically be called.
+  # Also reset the mocked Redis connection.
   #
   # If <tt>queue_name</tt> is given, then resets only that queue.
   def reset!(queue_name = nil)
+    @redis = nil
+    
     if @queue && queue_name
       @queue[queue_name] = []
     else

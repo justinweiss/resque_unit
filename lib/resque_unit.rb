@@ -8,6 +8,7 @@ rescue LoadError
 end
 
 require 'test/unit'
+require 'mock_redis'
 require 'resque_unit/helpers'
 require 'resque_unit/resque'
 require 'resque_unit/errors'

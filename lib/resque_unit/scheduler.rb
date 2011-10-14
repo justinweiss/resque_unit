@@ -19,7 +19,7 @@ module ResqueUnit
     end
     
     def enqueue_with_timestamp(timestamp, klass, *args)
-      enqueue_unit(queue_for(klass), {"class" => klass, "args" => args, "timestamp" => timestamp})
+      enqueue_unit(queue_for(klass), {"class" => klass.name, "args" => args, "timestamp" => timestamp})
     end
 
     def remove_delayed(klass, *args)

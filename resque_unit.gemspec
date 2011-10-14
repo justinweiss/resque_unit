@@ -14,4 +14,5 @@ spec = Gem::Specification.new do |s|
   s.files = Dir['lib/**/*.rb'] + Dir['test/**/*.rb']
   s.test_files = Dir.glob('test/*_test.rb')
   
+  s.add_dependency "mock_redis" # For Resque plugins
 end

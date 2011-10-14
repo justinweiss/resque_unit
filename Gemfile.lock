@@ -3,11 +3,13 @@ PATH
   specs:
     resque_unit (0.4.0)
       json (>= 1.4.6)
+      mock_redis
 
 GEM
   remote: http://rubygems.org/
   specs:
     json (1.5.3)
+    mock_redis (0.2.0)
     rake (0.8.7)
     shoulda (2.11.3)
 
