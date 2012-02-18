@@ -71,28 +71,25 @@ module Resque
 
   # Executes all jobs in all queues in an undefined order.
   def run!
-    old_queue = @queue.dup
-    self.reset!
-
-
-    old_queue.each do |queue_name, queue|
-      queue.each do |job_payload|
-        job_payload = decode(job_payload)
-        @hooks_enabled ? perform_with_hooks(job_payload) : perform_without_hooks(job_payload)
-      end
+    payloads = []
+    @queue.each do |queue_name, queue|
+      payloads.concat queue.slice!(0, queue.size)
     end
+    exec_payloads payloads.shuffle
   end
 
-  # Executes all jobs in the given queue in an undefined order.
-  def run_for!(queue_name)
-    jobs_payloads = all(queue_name)
+  def run_for!(queue_name, limit=false)
+    queue = @queue[queue_name]
+    exec_payloads queue.slice!(0, ( limit ? limit : queue.size) ).shuffle
+  end
 
-    self.reset!(queue_name)
-
-    jobs_payloads.each do |job_payload|
+  def exec_payloads(raw_payloads)
+    raw_payloads.each do |raw_payload|
+      job_payload = decode(raw_payload)
       @hooks_enabled ? perform_with_hooks(job_payload) : perform_without_hooks(job_payload)
     end
   end
+  private :exec_payloads
 
   # 1. Execute all jobs in all queues in an undefined order,
   # 2. Check if new jobs were announced, and execute them.
@@ -112,7 +109,11 @@ module Resque
 
   # :nodoc: 
   def enqueue(klass, *args)
-    queue_name = queue_for(klass)
+    enqueue_to( queue_for(klass), klass, *args)
+  end
+
+  # :nodoc:
+  def enqueue_to( queue_name, klass, *args )
     # Behaves like Resque, raise if no queue was specifed
     raise NoQueueError.new("Jobs must be placed onto a queue.") unless queue_name
     enqueue_unit(queue_name, {"class" => klass.name, "args" => args })
@@ -122,6 +123,7 @@ module Resque
   def queue_for(klass)
     klass.instance_variable_get(:@queue) || (klass.respond_to?(:queue) && klass.queue)
   end
+  alias :queue_from_class :queue_for
 
   # :nodoc:
   def empty_queues?
@@ -132,6 +134,12 @@ module Resque
 
   def enqueue_unit(queue_name, hash)
     klass = constantize(hash["class"])
+    if @hooks_enabled
+      before_hooks = Plugin.before_enqueue_hooks(klass).map do |hook|
+        klass.send(hook, *hash["args"])
+      end
+      return nil if before_hooks.any? { |result| result == false }
+    end
     queue(queue_name) << encode(hash)
     if @hooks_enabled
       Plugin.after_enqueue_hooks(klass).each do |hook|
@@ -200,7 +208,7 @@ module Resque
       
     # If an exception occurs during the job execution, look for an
     # on_failure hook then re-raise.
-    rescue => e
+    rescue Object => e
       failure_hooks.each { |hook| job_class.send(hook, e, *job_payload["args"]) }
       raise e
     end

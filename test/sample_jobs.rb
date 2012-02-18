@@ -53,6 +53,10 @@ module HooksMethods
   def after_enqueue_mark(*args)
     markers[:after_enqueue] = true
   end
+
+  def before_enqueue_mark(*args)
+    markers[:before_enqueue] = true
+  end
   
   def after_perform_mark(*args)
     markers[:after] = true
@@ -105,6 +109,13 @@ class JobWithHooks
     @dont_perform = true
   ensure
     @dont_perform = false
+  end
+end
+
+class JobWithHooksBeforeBlocks < JobWithHooks
+  @queue = :with_hooks
+  def self.before_enqueue_block_enqueueing
+    return false
   end
 end
 

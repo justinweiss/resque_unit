@@ -49,6 +49,40 @@ class ResqueUnitTest < Test::Unit::TestCase
     end
   end
   
+  context "A task that explicitly is queued to a different queue" do
+    setup { Resque.enqueue_to(:a_non_class_determined_queue, MediumPriorityJob) }
+    should "not queue to the class-determined queue" do
+      assert_equal 0, Resque.queue(MediumPriorityJob.queue).length
+    end
+    should "queue to the explicly-stated queue" do
+      assert_equal 1, Resque.queue(:a_non_class_determined_queue).length
+    end
+  end
+  
+  context "A task that spawns multiple jobs on a single queue" do
+    setup do 
+      3.times {Resque.enqueue(HighPriorityJob)}
+    end
+
+    should "allow partial runs with explicit limit" do
+      assert_equal 3, Resque.queue(:high).length, 'failed setup'
+      Resque.run_for!( :high, 1 )
+      assert_equal 2, Resque.queue(:high).length, 'failed to run just single job'
+    end
+
+    should "allow full run with too-large explicit limit" do
+      assert_equal 3, Resque.queue(:high).length, 'failed setup'
+      Resque.run_for!( :high, 50 )
+      assert_equal 0, Resque.queue(:high).length, 'failed to run all jobs'
+    end
+
+    should "allow full run with implicit limit" do
+      assert_equal 3, Resque.queue(:high).length, 'failed setup'
+      Resque.run_for!( :high )
+      assert_equal 0, Resque.queue(:high).length, 'failed to run all jobs'
+    end
+  end
+
   context "A task that schedules a resque job" do
     setup do 
       @returned = Resque.enqueue(LowPriorityJob)
@@ -114,6 +148,11 @@ class ResqueUnitTest < Test::Unit::TestCase
         assert(JobWithHooks.markers[:after_enqueue], 'no after_queue marker set')
       end
 
+      should "have run the before_enqueue hook" do 
+        assert(JobWithHooks.markers[:before_enqueue], 'no before_queue marker set')
+        assert_queued(JobWithHooks)
+      end
+
       should "run the before and after hooks during a run" do 
         Resque.run!
         assert(JobWithHooks.markers[:before], 'no before marker set')
@@ -155,6 +194,18 @@ class ResqueUnitTest < Test::Unit::TestCase
         Resque.run!
         assert(!JobWithHooksWithoutBefore.markers[:before], 'before marker set, and it should not')
       end
+    end
+
+    context "when before_enqueue returns false" do
+      setup do
+        JobWithHooksBeforeBlocks.clear_markers
+      end
+
+      should "not queue" do
+        Resque.enqueue JobWithHooksBeforeBlocks
+        assert_not_queued JobWithHooksBeforeBlocks
+      end
+
     end
 
     context "but without around" do
