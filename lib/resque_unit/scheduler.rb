@@ -28,6 +28,12 @@ module ResqueUnit
       args ||= []
       encoded_job_payloads.delete_if { |e| e = Resque.decode(e); e["class"] == klass.to_s && e["args"] == args }
     end
+
+    def remove_delayed_job_from_timestamp(timestamp, klass, *args)
+      encoded_job_payloads = Resque.queue(queue_for(klass))
+      args ||= []
+      encoded_job_payloads.delete_if { |e| e = Resque.decode(e); e["class"] == klass.to_s && e["timestamp"] == timestamp.to_s && e["args"] == args }
+    end
   end
 
   Resque.send(:extend, Scheduler)
