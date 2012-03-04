@@ -128,5 +128,74 @@ class ResqueUnitSchedulerTest < Test::Unit::TestCase
         end
       end
     end
+
+    context "and then the job is removed with #remove_delayed_job_with_timestamp" do
+      setup do
+        Resque.remove_delayed_job_from_timestamp(@time, MediumPriorityJob)
+      end
+
+      should "pass the assert_not_queued_at(@time, MediumPriorityJob) assertion" do
+        assert_not_queued_at(@time, MediumPriorityJob)
+      end
+
+      should "fail the assert_queued_at(@time, MediumPriorityJob) assertion" do
+        assert_raise Test::Unit::AssertionFailedError do
+          assert_queued_at(@time, MediumPriorityJob)
+        end
+      end
+    end
+  end
+
+  context "A task that schedules a resque job with arguments on on Sept. 6, 2016 at 6am" do
+    setup do
+      @time = Time.mktime(2016, 9, 6, 6)
+      Resque.enqueue_at(@time, JobWithArguments, 1, "test")
+    end
+
+    should "pass the assert_queued_at(@time, JobWithArguments, *args) assertion" do
+      assert_queued_at(@time, JobWithArguments, 1, "test")
+    end
+
+    should "fail the assert_queued_at(@time - 100, JobWithArguments, *args) assertion" do
+      assert_raise Test::Unit::AssertionFailedError do
+        assert_queued_at(@time - 100, JobWithArguments, 1, "test")
+      end
+    end
+
+    should "pass the assert_not_queued_at(@time - 100, JobWithArguments, *args) assertion" do
+      assert_not_queued_at(@time - 100, JobWithArguments, 1, "test")
+    end
+
+    context "and then the job is removed with #remove_delayed" do
+      setup do
+        Resque.remove_delayed(JobWithArguments, 1, "test")
+      end
+
+      should "pass the assert_not_queued_at(@time, JobWithArguments, *args) assertion" do
+        assert_not_queued_at(@time, JobWithArguments, 1, "test")
+      end
+
+      should "fail the assert_queued_at(@time, JobWithArguments, *args) assertion" do
+        assert_raise Test::Unit::AssertionFailedError do
+          assert_queued_at(@time, JobWithArguments, 1, "test")
+        end
+      end
+    end
+
+    context "and then the job is removed with #remove_delayed_job_with_timestamp" do
+      setup do
+        Resque.remove_delayed_job_from_timestamp(@time, JobWithArguments, 1, "test")
+      end
+
+      should "pass the assert_not_queued_at(@time, JobWithArguments, *args) assertion" do
+        assert_not_queued_at(@time, JobWithArguments, 1, "test")
+      end
+
+      should "fail the assert_queued_at(@time, MediumPriorityJob, *args) assertion" do
+        assert_raise Test::Unit::AssertionFailedError do
+          assert_queued_at(@time, JobWithArguments, 1, "test")
+        end
+      end
+    end
   end
 end
