@@ -18,12 +18,12 @@ class ResqueUnitSchedulerTest < Test::Unit::TestCase
     end
 
     should "fail the assert_queued_in(300, job) assertion" do
-      assert_raise Test::Unit::AssertionFailedError do 
+      assert_raise Test::Unit::AssertionFailedError do
         assert_queued_in(300, MediumPriorityJob)
       end
     end
 
-    should "pass the assert_not_queued_in(300, job) assertion" do 
+    should "pass the assert_not_queued_in(300, job) assertion" do
       assert_not_queued_in(300, MediumPriorityJob)
     end
 
@@ -31,7 +31,7 @@ class ResqueUnitSchedulerTest < Test::Unit::TestCase
       setup do
         Resque.remove_delayed(MediumPriorityJob)
       end
-      should "pass the assert_not_queued_at(@time, MediumPriorityJob) assertion" do 
+      should "pass the assert_not_queued_at(@time, MediumPriorityJob) assertion" do
         assert_not_queued_at(300, MediumPriorityJob)
       end
 
@@ -42,7 +42,7 @@ class ResqueUnitSchedulerTest < Test::Unit::TestCase
       end
     end
   end
-  
+
   context "A task that schedules a resque job in 5 minutes with arguments" do
     setup { Resque.enqueue_in(600, JobWithArguments, 1, "test") }
     should "pass the assert_queued_in(600, JobWithArguments) assertion" do
@@ -53,8 +53,8 @@ class ResqueUnitSchedulerTest < Test::Unit::TestCase
       assert_queued_in(600, JobWithArguments, [1, 'test'])
     end
 
-    should "fail the assert_queued_in(600, JobWithArguments, [2, 'test']) assertion" do 
-      assert_raise Test::Unit::AssertionFailedError do 
+    should "fail the assert_queued_in(600, JobWithArguments, [2, 'test']) assertion" do
+      assert_raise Test::Unit::AssertionFailedError do
         assert_queued_in(600, JobWithArguments, [2, 'test'])
       end
     end
@@ -63,7 +63,7 @@ class ResqueUnitSchedulerTest < Test::Unit::TestCase
       setup do
         Resque.remove_delayed(JobWithArguments, 1, 'test')
       end
-      should "pass the assert_not_queued_at(@time, JobWithArguments, 1, 'test') assertion" do 
+      should "pass the assert_not_queued_at(@time, JobWithArguments, 1, 'test') assertion" do
         assert_not_queued_at(600, JobWithArguments, 1, 'test')
       end
 
@@ -86,26 +86,26 @@ class ResqueUnitSchedulerTest < Test::Unit::TestCase
         assert_queued_in(600, JobWithArguments, [1, 'test'])
       end
 
-      should "still fail the assert_queued_in(600, JobWithArguments, [2, 'test']) assertion" do 
-        assert_raise Test::Unit::AssertionFailedError do 
+      should "still fail the assert_queued_in(600, JobWithArguments, [2, 'test']) assertion" do
+        assert_raise Test::Unit::AssertionFailedError do
           assert_queued_in(600, JobWithArguments, [2, 'test'])
         end
       end
     end
   end
-    
+
   context "A task that schedules a resque job on Sept. 6, 2016 at 6am" do
     setup do
       @time = Time.mktime(2016, 9, 6, 6)
       Resque.enqueue_at(@time, MediumPriorityJob)
     end
 
-    should "pass the assert_queued_at(@time, MediumPriorityJob) assertion" do 
+    should "pass the assert_queued_at(@time, MediumPriorityJob) assertion" do
       assert_queued_at(@time, MediumPriorityJob)
     end
 
-    should "fail the assert_queued_at(@time - 100, MediumPriorityJob) assertion" do 
-      assert_raise Test::Unit::AssertionFailedError do 
+    should "fail the assert_queued_at(@time - 100, MediumPriorityJob) assertion" do
+      assert_raise Test::Unit::AssertionFailedError do
         assert_queued_at(@time - 100, MediumPriorityJob)
       end
     end
@@ -118,7 +118,7 @@ class ResqueUnitSchedulerTest < Test::Unit::TestCase
       setup do
         Resque.remove_delayed(MediumPriorityJob)
       end
-      should "pass the assert_not_queued_at(@time, MediumPriorityJob) assertion" do 
+      should "pass the assert_not_queued_at(@time, MediumPriorityJob) assertion" do
         assert_not_queued_at(@time, MediumPriorityJob)
       end
 
@@ -153,17 +153,17 @@ class ResqueUnitSchedulerTest < Test::Unit::TestCase
     end
 
     should "pass the assert_queued_at(@time, JobWithArguments, *args) assertion" do
-      assert_queued_at(@time, JobWithArguments, 1, "test")
+      assert_queued_at(@time, JobWithArguments, [1, "test"])
     end
 
     should "fail the assert_queued_at(@time - 100, JobWithArguments, *args) assertion" do
       assert_raise Test::Unit::AssertionFailedError do
-        assert_queued_at(@time - 100, JobWithArguments, 1, "test")
+        assert_queued_at(@time - 100, JobWithArguments, [1, "test"])
       end
     end
 
     should "pass the assert_not_queued_at(@time - 100, JobWithArguments, *args) assertion" do
-      assert_not_queued_at(@time - 100, JobWithArguments, 1, "test")
+      assert_not_queued_at(@time - 100, JobWithArguments, [1, "test"])
     end
 
     context "and then the job is removed with #remove_delayed" do
@@ -172,28 +172,28 @@ class ResqueUnitSchedulerTest < Test::Unit::TestCase
       end
 
       should "pass the assert_not_queued_at(@time, JobWithArguments, *args) assertion" do
-        assert_not_queued_at(@time, JobWithArguments, 1, "test")
+        assert_not_queued_at(@time, JobWithArguments, [1, "test"])
       end
 
       should "fail the assert_queued_at(@time, JobWithArguments, *args) assertion" do
         assert_raise Test::Unit::AssertionFailedError do
-          assert_queued_at(@time, JobWithArguments, 1, "test")
+          assert_queued_at(@time, JobWithArguments, [1, "test"])
         end
       end
     end
 
-    context "and then the job is removed with #remove_delayed_job_with_timestamp" do
+    context "and then the job is removed with #remove_delayed_job_from_timestamp" do
       setup do
         Resque.remove_delayed_job_from_timestamp(@time, JobWithArguments, 1, "test")
       end
 
       should "pass the assert_not_queued_at(@time, JobWithArguments, *args) assertion" do
-        assert_not_queued_at(@time, JobWithArguments, 1, "test")
+        assert_not_queued_at(@time, JobWithArguments, [1, "test"])
       end
 
       should "fail the assert_queued_at(@time, MediumPriorityJob, *args) assertion" do
         assert_raise Test::Unit::AssertionFailedError do
-          assert_queued_at(@time, JobWithArguments, 1, "test")
+          assert_queued_at(@time, JobWithArguments, [1, "test"])
         end
       end
     end
