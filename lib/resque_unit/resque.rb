@@ -217,7 +217,7 @@ module Resque
   class Job
     extend Helpers
     def self.create(queue, klass_name, *args)
-      Resque.enqueue_unit(queue, {"class" => constantize(klass_name), "args" => args})
+      Resque.enqueue_unit(queue, {"class" => constantize(klass_name).to_s, "args" => args})
     end
   end
 
