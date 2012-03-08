@@ -1,13 +1,13 @@
 PATH
   remote: .
   specs:
-    resque_unit (0.4.1)
+    resque_unit (0.4.2)
       json (>= 1.4.6)
 
 GEM
   remote: http://rubygems.org/
   specs:
-    json (1.6.1)
+    json (1.6.5)
     rake (0.8.7)
     shoulda (2.11.3)
 
