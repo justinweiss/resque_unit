@@ -32,7 +32,7 @@ module ResqueUnit
     def remove_delayed_job_from_timestamp(timestamp, klass, *args)
       encoded_job_payloads = Resque.queue(queue_for(klass))
       args ||= []
-      encoded_job_payloads.delete_if { |e| e = Resque.decode(e); e["class"] == klass.to_s && e["timestamp"] == timestamp.to_s && e["args"] == args }
+      encoded_job_payloads.delete_if { |e| e = Resque.decode(e); e["class"] == klass.to_s && Time.new(e["timestamp"]).utc == Time.new(timestamp.to_s).utc && e["args"] == args }
     end
   end
 
