@@ -26,9 +26,9 @@ class ResqueUnitTest < Test::Unit::TestCase
       assert_equal 1, Resque.queue(:a_non_class_determined_queue).length
     end
   end
-  
+
   context "A task that spawns multiple jobs on a single queue" do
-    setup do 
+    setup do
       3.times {Resque.enqueue(HighPriorityJob)}
     end
 
@@ -52,7 +52,7 @@ class ResqueUnitTest < Test::Unit::TestCase
   end
 
   context "A task that schedules a resque job" do
-    setup do 
+    setup do
       @returned = Resque.enqueue(LowPriorityJob)
     end
 
@@ -60,12 +60,12 @@ class ResqueUnitTest < Test::Unit::TestCase
       assert @returned
     end
 
-    should "pass the assert_queued(job) assertion" do 
+    should "pass the assert_queued(job) assertion" do
       assert_queued(LowPriorityJob)
     end
 
-    should "fail the assert_not_queued(job) assertion" do 
-      assert_raise Test::Unit::AssertionFailedError do 
+    should "fail the assert_not_queued(job) assertion" do
+      assert_raise Test::Unit::AssertionFailedError do
         assert_not_queued(LowPriorityJob)
       end
     end
@@ -74,17 +74,17 @@ class ResqueUnitTest < Test::Unit::TestCase
       assert_equal 1, Resque.size(:low)
     end
 
-    context ", when Resque.run! is called," do 
-      setup do 
+    context ", when Resque.run! is called," do
+      setup do
         assert !LowPriorityJob.run?, "The job should not have been run yet"
         Resque.run!
       end
-      
-      teardown do 
+
+      teardown do
         LowPriorityJob.run = false
       end
 
-      should "run the job" do 
+      should "run the job" do
         assert LowPriorityJob.run?, "The job should have run"
       end
 
@@ -97,7 +97,7 @@ class ResqueUnitTest < Test::Unit::TestCase
   end
 
   context "A task that schedules a resque job with hooks" do
-    setup do 
+    setup do
       Resque.enable_hooks!
     end
 
@@ -106,22 +106,22 @@ class ResqueUnitTest < Test::Unit::TestCase
     end
 
     context "before, around, after, failure, after_enqueue" do
-      setup do 
+      setup do
         JobWithHooks.clear_markers
         Resque.enqueue(JobWithHooks)
       end
 
-      should "have run the after_enqueue hook" do 
+      should "have run the after_enqueue hook" do
         assert_queued(JobWithHooks)
         assert(JobWithHooks.markers[:after_enqueue], 'no after_queue marker set')
       end
 
-      should "have run the before_enqueue hook" do 
+      should "have run the before_enqueue hook" do
         assert(JobWithHooks.markers[:before_enqueue], 'no before_queue marker set')
         assert_queued(JobWithHooks)
       end
 
-      should "run the before and after hooks during a run" do 
+      should "run the before and after hooks during a run" do
         Resque.run!
         assert(JobWithHooks.markers[:before], 'no before marker set')
         assert(JobWithHooks.markers[:around], 'no around marker set')
@@ -253,12 +253,12 @@ class ResqueUnitTest < Test::Unit::TestCase
   end
 
   context "An empty queue" do
-    should "pass the assert_not_queued(job) assertion" do 
+    should "pass the assert_not_queued(job) assertion" do
       assert_not_queued(LowPriorityJob)
     end
 
     should "fail the assert_queued(job) assertion" do
-      assert_raise Test::Unit::AssertionFailedError do 
+      assert_raise Test::Unit::AssertionFailedError do
         assert_queued(LowPriorityJob)
       end
     end
@@ -267,16 +267,16 @@ class ResqueUnitTest < Test::Unit::TestCase
       assert_equal 0, Resque.size(:low)
     end
   end
-  
-  context "A task that schedules a resque job with arguments" do 
-    setup do 
+
+  context "A task that schedules a resque job with arguments" do
+    setup do
       Resque.enqueue(JobWithArguments, 1, :test, {:symbol => :symbol})
     end
-    
+
     should "pass the assert_queued(job, *args) assertion if the args match and sees enqueued symbols as strings" do
       assert_queued(JobWithArguments, [1, "test", {"symbol"=>"symbol"}])
     end
-    
+
     should "pass the assert_queued(job, *args) assertion if the args match using symbols" do
       assert_queued(JobWithArguments, [1, :test, {:symbol => :symbol}])
     end
@@ -285,8 +285,8 @@ class ResqueUnitTest < Test::Unit::TestCase
       assert_queued(JobWithArguments)
     end
 
-    should "fail the assert_queued(job) assertion if the args don't match" do 
-      assert_raise Test::Unit::AssertionFailedError do 
+    should "fail the assert_queued(job) assertion if the args don't match" do
+      assert_raise Test::Unit::AssertionFailedError do
         assert_queued(JobWithArguments, [2, "test"])
       end
     end
@@ -296,23 +296,23 @@ class ResqueUnitTest < Test::Unit::TestCase
     end
 
     should "fail the assert_not_queued(job) assertion if the args match" do
-      assert_raise Test::Unit::AssertionFailedError do 
+      assert_raise Test::Unit::AssertionFailedError do
         assert_not_queued(JobWithArguments, [1, "test", {"symbol"=>"symbol"}])
       end
     end
   end
 
   context "A job that schedules a new resque job" do
-    setup do 
+    setup do
       Resque.enqueue(JobThatCreatesANewJob)
     end
 
-    should "pass the assert_queued(job) assertion" do 
+    should "pass the assert_queued(job) assertion" do
       assert_queued(JobThatCreatesANewJob)
     end
 
-    should "fail the assert_not_queued(job) assertion" do 
-      assert_raise Test::Unit::AssertionFailedError do 
+    should "fail the assert_not_queued(job) assertion" do
+      assert_raise Test::Unit::AssertionFailedError do
         assert_not_queued(JobThatCreatesANewJob)
       end
     end
@@ -321,8 +321,8 @@ class ResqueUnitTest < Test::Unit::TestCase
       assert_not_queued(LowPriorityJob)
     end
 
-    context ", when Resque.run! is called," do 
-      setup do 
+    context ", when Resque.run! is called," do
+      setup do
         Resque.run!
       end
 
@@ -341,7 +341,7 @@ class ResqueUnitTest < Test::Unit::TestCase
         Resque.full_run!
       end
 
-      teardown do 
+      teardown do
         LowPriorityJob.run = false
       end
 
@@ -370,10 +370,10 @@ class ResqueUnitTest < Test::Unit::TestCase
       assert_queued(HighPriorityJob)
     end
 
-    context ", when Resque.run_for! is called," do 
+    context ", when Resque.run_for! is called," do
       should "run only tasks in the high priority queue" do
         Resque.run_for!(Resque.queue_for(HighPriorityJob))
-  
+
         assert_queued(LowPriorityJob)
         assert_not_queued(HighPriorityJob)
       end
@@ -389,7 +389,7 @@ class ResqueUnitTest < Test::Unit::TestCase
           assert_equal "LowPriorityJob should have been queued in low: [].", error.message
         end
       end
-      
+
       should "include job arguments if provided" do
         begin
           assert_not_queued(JobWithArguments, [1, "test"])
@@ -408,7 +408,7 @@ class ResqueUnitTest < Test::Unit::TestCase
             assert_equal "LowPriorityJob should not have been queued in low.", error.message
         end
       end
-      
+
       should "include job arguments if provided" do
         begin
           Resque.enqueue(JobWithArguments, 1, "test")
