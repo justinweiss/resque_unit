@@ -129,9 +129,25 @@ class ResqueUnitSchedulerTest < Test::Unit::TestCase
       end
     end
 
-    context "and then the job is removed with #remove_delayed_job_with_timestamp" do
+    context "and then the job is removed with #remove_delayed_job_from_timestamp" do
       setup do
         Resque.remove_delayed_job_from_timestamp(@time, MediumPriorityJob)
+      end
+
+      should "pass the assert_not_queued_at(@time, MediumPriorityJob) assertion" do
+        assert_not_queued_at(@time, MediumPriorityJob)
+      end
+
+      should "fail the assert_queued_at(@time, MediumPriorityJob) assertion" do
+        assert_raise Test::Unit::AssertionFailedError do
+          assert_queued_at(@time, MediumPriorityJob)
+        end
+      end
+    end
+
+    context "and then the job is removed with #remove_delayed_job_from_timestamp with timestamp specified in another timezone" do
+      setup do
+        Resque.remove_delayed_job_from_timestamp(@time.utc, MediumPriorityJob)
       end
 
       should "pass the assert_not_queued_at(@time, MediumPriorityJob) assertion" do
@@ -185,6 +201,22 @@ class ResqueUnitSchedulerTest < Test::Unit::TestCase
     context "and then the job is removed with #remove_delayed_job_from_timestamp" do
       setup do
         Resque.remove_delayed_job_from_timestamp(@time, JobWithArguments, 1, "test")
+      end
+
+      should "pass the assert_not_queued_at(@time, JobWithArguments, *args) assertion" do
+        assert_not_queued_at(@time, JobWithArguments, [1, "test"])
+      end
+
+      should "fail the assert_queued_at(@time, MediumPriorityJob, *args) assertion" do
+        assert_raise Test::Unit::AssertionFailedError do
+          assert_queued_at(@time, JobWithArguments, [1, "test"])
+        end
+      end
+    end
+
+    context "and then the job is removed with #remove_delayed_job_from_timestamp with timestamp in another timezone" do
+      setup do
+        Resque.remove_delayed_job_from_timestamp(@time.utc, JobWithArguments, 1, "test")
       end
 
       should "pass the assert_not_queued_at(@time, JobWithArguments, *args) assertion" do
