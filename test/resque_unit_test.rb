@@ -17,6 +17,38 @@ class ResqueUnitTest < Test::Unit::TestCase
     end
   end
 
+  context "A task that schedules a reqsue job, tested using some of the arguments" do
+    setup { Resque.enqueue(MediumPriorityJob, {:arg1 => "1", :arg2 => "2"}) }
+    should "pass the assert_queued_partial(job) assertion" do
+      assert_queued_partial(MediumPriorityJob,{:arg1 => "1"})
+    end
+  end
+  
+  context "A task that schedules a reqsue job, tested using some of the arguments and fails" do
+    setup { Resque.enqueue(MediumPriorityJob, {:arg1 => "1", :arg2 => "2"}) }
+    should "fail the assert_queued_partial(job) assertion" do
+      assert_raise Test::Unit::AssertionFailedError do 
+        assert_queued_partial(MediumPriorityJob,{:arg1 => "2"})
+      end
+    end
+  end
+  
+  context "A task that schedules a reqsue job, tested using none of the arguments" do
+    setup { Resque.enqueue(MediumPriorityJob, {:arg1 => "1", :arg2 => "2"}) }
+    should "pass the assert_queued_partial(job) assertion" do
+      assert_not_queued_partial(MediumPriorityJob,{:arg1 => "2"})
+    end
+  end
+  
+  context "A task that schedules a reqsue job, tested using some of the arguments" do
+    setup { Resque.enqueue(MediumPriorityJob, {:arg1 => "1", :arg2 => "2"}) }
+    should "fail the assert_queued_partial(job) assertion" do
+      assert_raise Test::Unit::AssertionFailedError do 
+        assert_not_queued_partial(MediumPriorityJob,{:arg1 => "1"})
+      end
+    end
+  end
+  
   context "A task that explicitly is queued to a different queue" do
     setup { Resque.enqueue_to(:a_non_class_determined_queue, MediumPriorityJob) }
     should "not queue to the class-determined queue" do
@@ -284,7 +316,7 @@ class ResqueUnitTest < Test::Unit::TestCase
     should "pass the assert_queued(job) assertion with no args passed" do
       assert_queued(JobWithArguments)
     end
-
+    
     should "fail the assert_queued(job) assertion if the args don't match" do 
       assert_raise Test::Unit::AssertionFailedError do 
         assert_queued(JobWithArguments, [2, "test"])
@@ -298,6 +330,32 @@ class ResqueUnitTest < Test::Unit::TestCase
     should "fail the assert_not_queued(job) assertion if the args match" do
       assert_raise Test::Unit::AssertionFailedError do 
         assert_not_queued(JobWithArguments, [1, "test", {"symbol"=>"symbol"}])
+      end
+    end
+  end
+  
+  context "A task that schedules a resque job with arguments" do 
+    setup do 
+      Resque.enqueue(JobWithArguments, 1, :test, {:symbol => :symbol, :symbol2 => :other_symbol})
+    end
+    
+    should "pass the assert_qeueued_partial(job) assertion with partial arguments passed" do
+      assert_queued_partial(JobWithArguments, [1, :test])
+    end
+    
+    should "pass the assert_qeueued_partial(job) assertion with partial arguments passed with named argument" do
+      assert_queued_partial(JobWithArguments,  {:symbol => :symbol, :symbol2 => :other_symbol})
+    end
+    
+    should "fail the assert_qeueued_partial(job) assertion with partial arguments passed" do 
+      assert_raise Test::Unit::AssertionFailedError do 
+        assert_queued_partial(JobWithArguments, [1, :no_test])
+      end
+    end
+    
+    should "fail the assert_qeueued_partial(job) assertion with partial arguments passed with named argument" do 
+      assert_raises Test::Unit::AssertionFailedError do 
+        assert_queued_partial(JobWithArguments, params = {:symbol => :other_symbol})
       end
     end
   end
@@ -456,5 +514,5 @@ class ResqueUnitTest < Test::Unit::TestCase
       end
     end
   end
-
+  
 end
