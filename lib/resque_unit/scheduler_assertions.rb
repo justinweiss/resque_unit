@@ -29,7 +29,7 @@ module ResqueUnit::SchedulerAssertions
     queue = Resque.queue_for(klass)
     assert !in_timestamped_queue?(queue, expected_timestamp, klass, args),
       (message || "#{klass} should not have been queued in #{queue} before #{expected_timestamp}.")
-    end
+  end
 
   # opposite of +assert_queued_in+
   def assert_not_queued_in(expected_time_difference, klass, args = nil, message = nil)
