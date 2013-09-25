@@ -116,7 +116,7 @@ module Resque
   def enqueue_to( queue_name, klass, *args )
     # Behaves like Resque, raise if no queue was specifed
     raise NoQueueError.new("Jobs must be placed onto a queue.") unless queue_name
-    enqueue_unit(queue_name, {"class" => klass.name, "args" => args })
+    enqueue_unit(queue_name, {"class" => klass.to_s, "args" => args })
   end
 
   # :nodoc: 
