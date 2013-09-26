@@ -15,4 +15,6 @@ require 'resque_unit/assertions'
 require 'resque_unit/plugin'
 
 Test::Unit::TestCase.send(:include, ResqueUnit::Assertions)
-
+if defined?(MiniTest)
+  MiniTest::Unit::TestCase.send(:include, ResqueUnit::Assertions)
+end

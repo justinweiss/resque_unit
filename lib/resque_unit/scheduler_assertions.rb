@@ -14,9 +14,8 @@ module ResqueUnit::SchedulerAssertions
   # arguments.
   def assert_queued_at(expected_timestamp, klass, args = nil, message = nil)
     queue = Resque.queue_for(klass)
-    assert_block (message || "#{klass} should have been queued in #{queue} before #{expected_timestamp}: #{Resque.queue(queue).inspect}.") do 
-      in_timestamped_queue?(queue, expected_timestamp, klass, args)
-    end
+    assert in_timestamped_queue?(queue, expected_timestamp, klass, args),
+      (message || "#{klass} should have been queued in #{queue} before #{expected_timestamp}: #{Resque.queue(queue).inspect}.")
   end
 
   # Similar to +assert_queued_at+, except it takes an expected time
@@ -28,9 +27,8 @@ module ResqueUnit::SchedulerAssertions
   # opposite of +assert_queued_at+
   def assert_not_queued_at(expected_timestamp, klass, args = nil, message = nil)
     queue = Resque.queue_for(klass)
-    assert_block (message || "#{klass} should not have been queued in #{queue} before #{expected_timestamp}.") do 
-      !in_timestamped_queue?(queue, expected_timestamp, klass, args)
-    end
+    assert !in_timestamped_queue?(queue, expected_timestamp, klass, args),
+      (message || "#{klass} should not have been queued in #{queue} before #{expected_timestamp}.")
   end
 
   # opposite of +assert_queued_in+
