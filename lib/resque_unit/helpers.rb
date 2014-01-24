@@ -1,4 +1,4 @@
-module Resque
+module ResqueUnit
   module Helpers
     # Given a Ruby object, returns a string suitable for storage in a
     # queue.
