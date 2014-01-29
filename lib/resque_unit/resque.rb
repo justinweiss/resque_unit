@@ -1,7 +1,7 @@
 # The fake Resque class. This needs to be loaded after the real Resque
 # for the assertions in +ResqueUnit::Assertions+ to work.
 module Resque
-  include Helpers
+  include ResqueUnit::Helpers
   extend self
 
   # Resets all the queues to the empty state. This should be called in
@@ -215,7 +215,7 @@ module Resque
   end
 
   class Job
-    extend Helpers
+    extend ResqueUnit::Helpers
     def self.create(queue, klass_name, *args)
       Resque.enqueue_unit(queue, {"class" => constantize(klass_name).to_s, "args" => args})
     end
