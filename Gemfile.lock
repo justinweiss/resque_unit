@@ -5,10 +5,10 @@ PATH
       json (>= 1.4.6)
 
 GEM
-  remote: http://rubygems.org/
+  remote: https://rubygems.org/
   specs:
     json (1.8.0)
-    rake (0.8.7)
+    rake (10.2.2)
     shoulda (2.11.3)
 
 PLATFORMS
