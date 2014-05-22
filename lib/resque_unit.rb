@@ -17,6 +17,10 @@ if defined?(Test::Unit)
   Test::Unit::TestCase.send(:include, ResqueUnit::Assertions)
 end
 
-if defined?(MiniTest)
+if defined?(MiniTest::Unit::TestCase)
   MiniTest::Unit::TestCase.send(:include, ResqueUnit::Assertions)
+end
+
+if defined?(Minitest::Test)
+  Minitest::Test.send(:include, ResqueUnit::Assertions)
 end
