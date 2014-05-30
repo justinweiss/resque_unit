@@ -8,6 +8,7 @@ spec = Gem::Specification.new do |s|
   s.author = "Justin Weiss"
   s.email = "justin@uberweiss.org"
   s.homepage = "http://github.com/justinweiss/resque_unit"
+  s.license = 'MIT'
   s.extra_rdoc_files = ['README.md']
   s.has_rdoc = true
 
