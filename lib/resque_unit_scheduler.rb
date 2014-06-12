@@ -1,7 +1,14 @@
 require 'resque_unit/scheduler'
 require 'resque_unit/scheduler_assertions'
 
-Test::Unit::TestCase.send(:include, ResqueUnit::SchedulerAssertions)
-if defined?(MiniTest)
+if defined?(Test::Unit)
+  Test::Unit::TestCase.send(:include, ResqueUnit::SchedulerAssertions)
+end
+
+if defined?(MiniTest::Unit::TestCase)
   MiniTest::Unit::TestCase.send(:include, ResqueUnit::SchedulerAssertions)
+end
+
+if defined?(Minitest::Test)
+  Minitest::Test.send(:include, ResqueUnit::SchedulerAssertions)
 end
