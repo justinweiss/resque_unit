@@ -13,7 +13,7 @@ require 'resque_unit/errors'
 require 'resque_unit/assertions'
 require 'resque_unit/plugin'
 
-if defined?(Test::Unit)
+if defined?(Test::Unit::TestCase)
   Test::Unit::TestCase.send(:include, ResqueUnit::Assertions)
 end
 
