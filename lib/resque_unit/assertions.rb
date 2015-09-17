@@ -1,7 +1,6 @@
 # These are a group of assertions you can use in your unit tests to
 # verify that your code is using Resque correctly.
 module ResqueUnit::Assertions
-  
   # Asserts that +klass+ has been queued into its appropriate queue at
   # least once. If +args+ is nil, it only asserts that the klass has
   # been queued. Otherwise, it asserts that the klass has been queued
