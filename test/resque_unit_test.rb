@@ -34,19 +34,19 @@ describe ResqueUnit do
 
     it "allows partial runs with explicit limit" do
       assert_equal 3, Resque.queue(:high).length, 'failed setup'
-      Resque.run_for!( :high, 1 )
+      Resque.run_for!(:high, 1)
       assert_equal 2, Resque.queue(:high).length, 'failed to run just single job'
     end
 
     it "allows full run with too-large explicit limit" do
       assert_equal 3, Resque.queue(:high).length, 'failed setup'
-      Resque.run_for!( :high, 50 )
+      Resque.run_for!(:high, 50)
       assert_equal 0, Resque.queue(:high).length, 'failed to run all jobs'
     end
 
     it "allows full run with implicit limit" do
       assert_equal 3, Resque.queue(:high).length, 'failed setup'
-      Resque.run_for!( :high )
+      Resque.run_for!(:high)
       assert_equal 0, Resque.queue(:high).length, 'failed to run all jobs'
     end
   end
@@ -372,7 +372,7 @@ describe ResqueUnit do
 
     describe ", when Resque.run_for! is called," do
       it "runs only tasks in the high priority queue" do
-        Resque.run_for!(Resque.queue_for(HighPriorityJob))
+        Resque.run_for!(Resque.queue_from_class(HighPriorityJob))
 
         assert_queued(LowPriorityJob)
         assert_not_queued(HighPriorityJob)
@@ -444,11 +444,6 @@ describe ResqueUnit do
   describe "A job that is created using Resque::Job.create" do
     it "is queued" do
       Resque::Job.create(:my_custom_queue, "LowPriorityJob", "arg1", "arg2")
-      assert_job_created(:my_custom_queue, LowPriorityJob, ["arg1", "arg2"])
-    end
-
-    it "queues a job with a dasherized name" do
-      Resque::Job.create(:my_custom_queue, "low-priority-job", "arg1", "arg2")
       assert_job_created(:my_custom_queue, LowPriorityJob, ["arg1", "arg2"])
     end
   end

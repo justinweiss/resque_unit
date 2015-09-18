@@ -6,12 +6,11 @@ begin
 rescue LoadError
   require 'json'
 end
-
+require 'resque'
+require 'fakeredis'
 require 'resque_unit/helpers'
 require 'resque_unit/resque'
-require 'resque_unit/errors'
 require 'resque_unit/assertions'
-require 'resque_unit/plugin'
 
 if defined?(Test::Unit::TestCase)
   Test::Unit::TestCase.send(:include, ResqueUnit::Assertions)

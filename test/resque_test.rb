@@ -35,8 +35,9 @@ describe Resque do
       assert_equal [], Resque.peek(MediumPriorityJob.queue, 4, 2)
     end
 
-    it "returns an empty array when peek method called with count equal 0" do
-      assert_equal [], Resque.peek(MediumPriorityJob.queue, 0, 0)
+    it "returns all jobs' payloads when peek method called with count equal 0" do
+      # This is the way Resque.peek works, so it's now the way resque-unit works!
+      assert_equal Resque.all(MediumPriorityJob.queue), Resque.peek(MediumPriorityJob.queue, 0, 0)
     end
 
     it "returns all jobs' payloads when all method called" do
