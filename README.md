@@ -3,19 +3,13 @@ ResqueUnit
 
 ResqueUnit provides some extra assertions and a mock Resque for
 testing Rails code that depends on Resque. You can install it as
-either a gem or a plugin:
+either a gem:
 
     gem install resque_unit
 
 and in your test.rb: 
 
     config.gem 'resque_unit'
-
-If you'd rather install it as a plugin, you should be able to run
-
-    script/plugin install git://github.com/justinweiss/resque_unit.git
-
-inside your Rails projects. 
 
 Examples
 ========
@@ -103,10 +97,6 @@ Caveats
 
 * You should make sure that you call `Resque.reset!` in your test's
   setup method to clear all of the test queues.
-* Hooks support is optional. Just because you probably don't want to call
-  them during unit tests if they play with a DB. Call `Resque.enable_hooks!`
-  in your tests's setup method to enable hooks. To disable hooks, call
-  `Resque.disable_hooks!`.
 
 Resque-Scheduler Support
 ========================

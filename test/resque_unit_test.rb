@@ -97,14 +97,6 @@ describe ResqueUnit do
   end
 
   describe "A task that schedules a resque job with hooks" do
-    before do
-      Resque.enable_hooks!
-    end
-
-    after do
-      Resque.disable_hooks!
-    end
-
     describe "before, around, after, failure, after_enqueue" do
       before do
         JobWithHooks.clear_markers

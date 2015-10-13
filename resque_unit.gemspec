@@ -1,10 +1,11 @@
 spec = Gem::Specification.new do |s|
   s.name = 'resque_unit'
-  s.version = '1.0.0'
+  s.version = '1.0.0.beta.1'
   s.summary = 'Minitest and Test::Unit support for resque job queueing'
   s.add_dependency "json", ">= 1.4.6"
   s.add_dependency "fakeredis"
   s.add_dependency "resque"
+  s.add_development_dependency "resque-scheduler"
   s.add_development_dependency "pry-byebug"
   s.add_development_dependency "bundler"
   s.add_development_dependency "minitest", "~> 5.0"

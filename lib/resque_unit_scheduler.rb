@@ -1,4 +1,5 @@
-require 'resque_unit/scheduler'
+require 'resque_unit'
+require 'resque-scheduler'
 require 'resque_unit/scheduler_assertions'
 
 if defined?(Test::Unit::TestCase)
