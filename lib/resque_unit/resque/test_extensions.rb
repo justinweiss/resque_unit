@@ -2,6 +2,16 @@ module Resque
   module TestExtensions
     include ResqueUnit::Helpers
 
+    # A redis connection that always uses fakeredis.
+    def fake_redis
+      @fake_redis ||= Redis.new(driver: :memory)
+    end
+
+    # Always return the fake redis.
+    def redis
+      fake_redis
+    end
+
     # Resets all the queues to the empty state. This should be called in
     # your test's +setup+ method until I can figure out a way for it to
     # automatically be called.
@@ -45,7 +55,7 @@ module Resque
         Resque::Job.new(:inline, raw_payload).perform
       end
     end
-    
+
     private :exec_payloads
 
     # 1. Execute all jobs in all queues in an undefined order,

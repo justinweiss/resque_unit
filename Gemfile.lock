@@ -72,3 +72,6 @@ DEPENDENCIES
   rdoc
   resque-scheduler
   resque_unit!
+
+BUNDLED WITH
+   1.10.6
