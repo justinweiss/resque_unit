@@ -1,7 +1,5 @@
 module Resque
   module TestExtensions
-    include ResqueUnit::Helpers
-
     # A redis connection that always uses fakeredis.
     def fake_redis
       @fake_redis ||= Redis.new(driver: :memory)

@@ -7,7 +7,6 @@ rescue LoadError
   require 'json'
 end
 require 'resque'
-require 'resque_unit/helpers'
 require 'resque_unit/resque'
 require 'resque_unit/assertions'
 

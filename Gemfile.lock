@@ -1,9 +1,8 @@
 PATH
   remote: .
   specs:
-    resque_unit (1.0.0.beta.1)
+    resque_unit (1.0.0.beta.2)
       fakeredis
-      json (>= 1.4.6)
       resque
 
 GEM
