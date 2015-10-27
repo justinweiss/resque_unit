@@ -1,8 +1,9 @@
 require 'test_helper'
 require 'resque_unit_scheduler'
 
-describe ResqueUnit::Scheduler do
+describe Resque do
   include ResqueUnit::Assertions
+  include ResqueUnit::SchedulerAssertions
   
   before do
     Resque.reset!

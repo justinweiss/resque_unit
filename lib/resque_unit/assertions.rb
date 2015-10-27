@@ -8,14 +8,14 @@ module ResqueUnit::Assertions
   # want to assert that klass has been queued without arguments. Pass a block
   # if you want to assert something was queued within its execution.
   def assert_queued(klass, args = nil, message = nil, &block)
-    queue_name = Resque.queue_for(klass)
+    queue_name = Resque.queue_from_class(klass)
     assert_job_created(queue_name, klass, args, message, &block)
   end
   alias assert_queues assert_queued
 
   # The opposite of +assert_queued+.
   def assert_not_queued(klass = nil, args = nil, message = nil, &block)
-    queue_name = Resque.queue_for(klass)
+    queue_name = Resque.queue_from_class(klass)
 
     queue = if block_given?
       snapshot = Resque.size(queue_name)
@@ -31,9 +31,9 @@ module ResqueUnit::Assertions
 
   # Asserts no jobs were queued within the block passed.
   def assert_nothing_queued(message = nil, &block)
-    snapshot = Resque.size
+    snapshot = total_job_count
     yield
-    present = Resque.size
+    present = total_job_count
     assert_equal snapshot, present, message || "No jobs should have been queued"
   end
 
@@ -52,6 +52,11 @@ module ResqueUnit::Assertions
   end
 
   private
+
+  # The total count of all the jobs in Resque.
+  def total_job_count
+    Resque.queues.inject(0) { |acc, queue| acc + Resque.size(queue) }
+  end
 
   # In Test::Unit, +assert_block+ displays only the message on a test
   # failure and +assert+ always appends a message to the end of the
