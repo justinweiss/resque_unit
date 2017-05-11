@@ -440,6 +440,13 @@ describe ResqueUnit do
       end
     end
   end
+  
+  context "A job inserted through Resque::Job.create" do
+    should "be added to queue" do
+      Resque::Job.create(:critical, 'MyJob')
+      assert_queued MyJob    
+    end
+  end
 
   describe "A job that is created using Resque::Job.create" do
     it "is queued" do
@@ -453,4 +460,8 @@ describe ResqueUnit do
     end
   end
 
+end
+
+class MyJob
+  @queue = :critical 
 end
