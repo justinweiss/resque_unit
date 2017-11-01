@@ -9,7 +9,15 @@ module ResqueUnit
     # for queueing.  Until timestamp is in the past, the job will
     # sit in the schedule list.
     def enqueue_at(timestamp, klass, *args)
-      enqueue_with_timestamp(timestamp, klass, *args)
+      enqueue_with_timestamp(queue_for(klass), timestamp, klass, *args)
+    end
+
+    # Identical to +enqueue_at+, except you can also specify
+    # a queue in which the job will be placed after the
+    # timestamp has passed. It respects Resque.inline option, by
+    # creating the job right away instead of adding to the queue.
+    def enqueue_at_with_queue(queue, timestamp, klass, *args)
+      enqueue_with_timestamp(queue, timestamp, klass, *args)
     end
 
     # Identical to enqueue_at but takes number_of_seconds_from_now
@@ -18,10 +26,9 @@ module ResqueUnit
       enqueue_at(Time.now + number_of_seconds_from_now, klass, *args)
     end
 
-    def enqueue_with_timestamp(timestamp, klass, *args)
-      enqueue_unit(queue_for(klass), {"class" => klass.name, "args" => args, "timestamp" => timestamp})
+    def enqueue_with_timestamp(queue, timestamp, klass, *args)
+      enqueue_unit(queue, {"class" => klass.name, "args" => args, "timestamp" => timestamp})
     end
-
     def remove_delayed(klass, *args)
       # points to real queue
       encoded_job_payloads = Resque.queue(queue_for(klass))
