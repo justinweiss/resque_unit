@@ -117,6 +117,7 @@ describe ResqueUnit do
 
       it "clears the job from the queue" do
         assert_not_queued(LowPriorityJob)
+        refute_queued(LowPriorityJob)
       end
     end
 

@@ -38,11 +38,13 @@ module ResqueUnit::SchedulerAssertions
     queue = Resque.queue_for(klass)
     assert_not_queued_at_with_queue(queue, expected_timestamp, klass, args, message)
   end
+  alias refute_queued_at assert_not_queued_at
 
   # opposite of +assert_queued_in+
   def assert_not_queued_in(expected_time_difference, klass, args = nil, message = nil)
     assert_not_queued_at(Time.now + expected_time_difference, klass, args, message)
   end
+  alias refute_queued_in assert_not_queued_in
 
   def assert_not_queued_at_with_queue(queue, expected_timestamp, klass, args = nil, message = nil)
     assert !in_timestamped_queue?(queue, expected_timestamp, klass, args),

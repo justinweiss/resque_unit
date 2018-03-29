@@ -18,6 +18,7 @@ module ResqueUnit::Assertions
     queue_name = Resque.queue_for(klass)
     assert_not_queued_to(queue_name, klass, args, message, &block)
   end
+  alias refute_queued assert_not_queued
 
   def assert_not_queued_to(queue_name, klass = nil, args = nil, message = nil, &block)
     queue = if block_given?

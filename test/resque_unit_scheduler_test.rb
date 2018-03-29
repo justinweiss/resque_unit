@@ -26,6 +26,7 @@ describe ResqueUnit::Scheduler do
 
     it "passes the assert_not_queued_in(300, job) assertion" do
       assert_not_queued_in(300, MediumPriorityJob)
+      refute_queued_in(300, MediumPriorityJob)
     end
 
     describe "and then the job is removed with #remove_delayed" do
@@ -34,6 +35,7 @@ describe ResqueUnit::Scheduler do
       end
       it "passes the assert_not_queued_at(@time, MediumPriorityJob) assertion" do
         assert_not_queued_at(300, MediumPriorityJob)
+        refute_queued_at(300, MediumPriorityJob)
       end
 
       it "fails the assert_queued_at(@time, MediumPriorityJob) assertion" do
