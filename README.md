@@ -72,6 +72,13 @@ You can test enqueueing to specific queues for class constants that don't exist 
       assert_queued_to(:another_queue, "NonexistantJobClass", "some args")
     end
 
+And assert the opposite
+
+    def test_job_not_enqueued
+      Resque.enqueue_to(:another_queue, "NonexistantJobClass", "some args")
+      refute_queued_to(:wrong_queue, "NonexistantJobClass", "some args")
+    end
+
 Finally, you can enable hooks:
 
     Resque.enable_hooks!

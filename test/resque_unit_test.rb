@@ -47,6 +47,11 @@ describe ResqueUnit do
     it "passes the assert_queued_to assertion" do
       assert_queued_to @queue, "NonexistantClassJob"
     end
+
+    it "passes the assert_not_queued_to assertion for a different queue" do
+      refute_queued_to :wrong_queue, "NonexistantClassJob"
+      assert_not_queued_to :wrong_queue, "NonexistantClassJob"
+    end
   end
 
   describe "A task that spawns multiple jobs on a single queue" do

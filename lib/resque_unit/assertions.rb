@@ -16,7 +16,10 @@ module ResqueUnit::Assertions
   # The opposite of +assert_queued+.
   def assert_not_queued(klass = nil, args = nil, message = nil, &block)
     queue_name = Resque.queue_for(klass)
+    assert_not_queued_to(queue_name, klass, args, message, &block)
+  end
 
+  def assert_not_queued_to(queue_name, klass = nil, args = nil, message = nil, &block)
     queue = if block_given?
       snapshot = Resque.size(queue_name)
       yield
@@ -28,6 +31,7 @@ module ResqueUnit::Assertions
     assert_with_custom_message(!in_queue?(queue, klass, args),
       message || "#{klass}#{args ? " with #{args.inspect}" : ""} should not have been queued in #{queue_name}.")
   end
+  alias refute_queued_to assert_not_queued_to
 
   # Asserts no jobs were queued within the block passed.
   def assert_nothing_queued(message = nil, &block)

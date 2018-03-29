@@ -36,14 +36,24 @@ module ResqueUnit::SchedulerAssertions
   # opposite of +assert_queued_at+
   def assert_not_queued_at(expected_timestamp, klass, args = nil, message = nil)
     queue = Resque.queue_for(klass)
-    assert !in_timestamped_queue?(queue, expected_timestamp, klass, args),
-      (message || "#{klass} should not have been queued in #{queue} before #{expected_timestamp}.")
+    assert_not_queued_at_with_queue(queue, expected_timestamp, klass, args, message)
   end
 
   # opposite of +assert_queued_in+
   def assert_not_queued_in(expected_time_difference, klass, args = nil, message = nil)
     assert_not_queued_at(Time.now + expected_time_difference, klass, args, message)
   end
+
+  def assert_not_queued_at_with_queue(queue, expected_timestamp, klass, args = nil, message = nil)
+    assert !in_timestamped_queue?(queue, expected_timestamp, klass, args),
+      (message || "#{klass} should not have been queued in #{queue} before #{expected_timestamp}.")
+  end
+  alias refute_queued_at_with_queue assert_not_queued_at_with_queue
+
+  def assert_not_queued_in_with_queue(queue, expected_time_difference, klass, args = nil, message = nil)
+    assert_not_queued_at_with_queue(queue, Time.now + expected_time_difference, klass, args, message)
+  end
+  alias refute_queued_in_with_queue assert_not_queued_in_with_queue
 
   private
 
