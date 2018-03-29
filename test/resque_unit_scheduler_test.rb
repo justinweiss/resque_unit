@@ -231,4 +231,23 @@ describe ResqueUnit::Scheduler do
       end
     end
   end
+
+  describe "a job enqueued in 5 minutes to a specific queue" do
+    before { Resque.enqueue_in_with_queue(:another_queue, 600, "NonexistantClassJob") }
+
+    it "passes the assert_queued_in_with_queue(queue, time, job) assertion" do
+      assert_queued_in_with_queue(:another_queue, 600, "NonexistantClassJob")
+    end
+  end
+
+  describe "a job enqueued at a time to a specific queue" do
+    before do
+      @time = Time.mktime(2016, 9, 6, 6)
+      Resque.enqueue_at_with_queue(:another_queue, @time, "NonexistantClassJob")
+    end
+
+    it "passes the assert_queued_at_with_queue(queue, timestamp, job) assertion" do
+      assert_queued_at_with_queue(:another_queue, @time, "NonexistantClassJob")
+    end
+  end
 end

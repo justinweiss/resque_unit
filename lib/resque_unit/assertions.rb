@@ -50,6 +50,7 @@ module ResqueUnit::Assertions
     assert_with_custom_message(in_queue?(queue, klass, args),
       message || "#{klass}#{args ? " with #{args.inspect}" : ""} should have been queued in #{queue_name}: #{queue.inspect}.")
   end
+  alias assert_queued_to assert_job_created
 
   private
 

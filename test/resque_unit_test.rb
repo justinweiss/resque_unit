@@ -19,11 +19,33 @@ describe ResqueUnit do
 
   describe "A task that explicitly is queued to a different queue" do
     before { Resque.enqueue_to(:a_non_class_determined_queue, MediumPriorityJob) }
+
     it "does not queue to the class-determined queue" do
       assert_equal 0, Resque.queue(MediumPriorityJob.queue).length
     end
+
     it "queues to the explicly-stated queue" do
       assert_equal 1, Resque.queue(:a_non_class_determined_queue).length
+    end
+
+    it "passes the assert_queued_to assertion" do
+      assert_queued_to :a_non_class_determined_queue, MediumPriorityJob
+    end
+  end
+
+  describe "A task where the job class does not exist in the testing project" do
+    before do
+      @queue = :a_non_class_determined_queue
+      Resque.enqueue_to(@queue, "NonexistantClassJob", "some args")
+    end
+
+    it "queues to the explicly-stated queue" do
+      job_payload = {"args"=>["some args"], "class"=>"NonexistantClassJob"}
+      assert_equal job_payload, Resque.peek(@queue, 0, 1)
+    end
+
+    it "passes the assert_queued_to assertion" do
+      assert_queued_to @queue, "NonexistantClassJob"
     end
   end
 
