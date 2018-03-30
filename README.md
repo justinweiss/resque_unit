@@ -65,6 +65,20 @@ You can also access the queues directly:
       assert_equal 1, Resque.queue(:low).length
     end
 
+You can test enqueueing to specific queues for class constants that don't exist in your project:
+
+    def test_job_in_another_queue
+      Resque.enqueue_to(:another_queue, "NonexistantJobClass", "some args")
+      assert_queued_to(:another_queue, "NonexistantJobClass", "some args")
+    end
+
+And assert the opposite
+
+    def test_job_not_enqueued
+      Resque.enqueue_to(:another_queue, "NonexistantJobClass", "some args")
+      refute_queued_to(:wrong_queue, "NonexistantJobClass", "some args")
+    end
+
 Finally, you can enable hooks:
 
     Resque.enable_hooks!
@@ -123,6 +137,12 @@ assertions. These are used like this:
     Resque.enqueue_at(Time.now + 10, MediumPriorityJob) # enqueues MediumPriorityJob at 10 seconds from now
     assert_queued_at(Time.now + 10, MediumPriorityJob) # will pass
     assert_not_queued_at(Time.now + 1, MediumPriorityJob) # will also pass
+
+    Resque.enqueue_in_with_queue(:another_queue, 600, "NonexistantJobClass")
+    assert_queued_in_with_queue(:another_queue, 600, "NonexistantJobClass") # will pass
+
+    Resque.enqueue_at_with_queue(:another_queue, Time.now + 10, "NonexistantJobClass") # enqueues MediumPriorityJob at 10 seconds from now
+    assert_queued_at_with_queue(:another_queue, Time.now + 10, "NonexistantJobClass") # will pass
 
 For now, `assert_queued` and `assert_not_queued` will pass for any
 scheduled job. `Resque.run!` will run all scheduled jobs as well.

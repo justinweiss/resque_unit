@@ -26,6 +26,7 @@ describe ResqueUnit::Scheduler do
 
     it "passes the assert_not_queued_in(300, job) assertion" do
       assert_not_queued_in(300, MediumPriorityJob)
+      refute_queued_in(300, MediumPriorityJob)
     end
 
     describe "and then the job is removed with #remove_delayed" do
@@ -34,6 +35,7 @@ describe ResqueUnit::Scheduler do
       end
       it "passes the assert_not_queued_at(@time, MediumPriorityJob) assertion" do
         assert_not_queued_at(300, MediumPriorityJob)
+        refute_queued_at(300, MediumPriorityJob)
       end
 
       it "fails the assert_queued_at(@time, MediumPriorityJob) assertion" do
@@ -229,6 +231,35 @@ describe ResqueUnit::Scheduler do
           assert_queued_at(@time, JobWithArguments, [1, "test"])
         end
       end
+    end
+  end
+
+  describe "a job enqueued in 5 minutes to a specific queue" do
+    before { Resque.enqueue_in_with_queue(:another_queue, 600, "NonexistantClassJob") }
+
+    it "passes the assert_queued_in_with_queue(queue, time, job) assertion" do
+      assert_queued_in_with_queue(:another_queue, 600, "NonexistantClassJob")
+    end
+
+    it "passes the assert_not_queued_in_with_queue assertion for wrong queue" do
+      assert_not_queued_in_with_queue(:wrong_queue, 600, "NonexistantClassJob")
+      refute_queued_in_with_queue(:wrong_queue, 600, "NonexistantClassJob")
+    end
+  end
+
+  describe "a job enqueued at a time to a specific queue" do
+    before do
+      @time = Time.mktime(2016, 9, 6, 6)
+      Resque.enqueue_at_with_queue(:another_queue, @time, "NonexistantClassJob")
+    end
+
+    it "passes the assert_queued_at_with_queue(queue, timestamp, job) assertion" do
+      assert_queued_at_with_queue(:another_queue, @time, "NonexistantClassJob")
+    end
+
+    it "passes the assert_not_queued_at_with_queue assertion for wrong queue" do
+      assert_not_queued_at_with_queue(:wrong_queue, @time, "NonexistantClassJob")
+      refute_queued_at_with_queue(:wrong_queue, @time, "NonexistantClassJob")
     end
   end
 end

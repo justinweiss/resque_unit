@@ -12,14 +12,26 @@ module ResqueUnit
       enqueue_with_timestamp(timestamp, klass, *args)
     end
 
+    def enqueue_at_with_queue(queue, timestamp, klass, *args)
+      enqueue_with_queue_and_timestamp(queue, timestamp, klass, *args)
+    end
+
     # Identical to enqueue_at but takes number_of_seconds_from_now
     # instead of a timestamp.
     def enqueue_in(number_of_seconds_from_now, klass, *args)
       enqueue_at(Time.now + number_of_seconds_from_now, klass, *args)
     end
 
+    def enqueue_in_with_queue(queue, number_of_seconds_from_now, klass, *args)
+      enqueue_at_with_queue(queue, Time.now + number_of_seconds_from_now, klass, *args)
+    end
+
     def enqueue_with_timestamp(timestamp, klass, *args)
-      enqueue_unit(queue_for(klass), {"class" => klass.name, "args" => args, "timestamp" => timestamp})
+      enqueue_with_queue_and_timestamp(queue_for(klass), timestamp, klass, *args)
+    end
+
+    def enqueue_with_queue_and_timestamp(queue, timestamp, klass, *args)
+      enqueue_unit(queue, {"class" => klass.to_s, "args" => args, "timestamp" => timestamp})
     end
 
     def remove_delayed(klass, *args)
