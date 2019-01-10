@@ -33,6 +33,12 @@ module ResqueUnit
     def enqueue_with_queue_and_timestamp(queue, timestamp, klass, *args)
       enqueue_unit(queue, {"class" => klass.to_s, "args" => args, "timestamp" => timestamp})
     end
+    
+    def delayed?(klass, *args)
+      encoded_job_payloads = Resque.queue(queue_for(klass))
+      args ||= []
+      encoded_job_payloads.select { |e| e = Resque.decode(e); e["class"] == klass.to_s && e["args"] == args }.present?
+    end
 
     def remove_delayed(klass, *args)
       # points to real queue
