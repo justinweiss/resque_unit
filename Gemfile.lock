@@ -7,10 +7,11 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    json (2.3.0)
-    minitest (5.14.1)
-    rake (13.0.1)
-    rdoc (6.2.1)
+    json (1.8.3)
+    minitest (5.8.0)
+    rake (10.2.2)
+    rdoc (4.1.1)
+      json (~> 1.4)
 
 PLATFORMS
   ruby
@@ -23,4 +24,4 @@ DEPENDENCIES
   resque_unit!
 
 BUNDLED WITH
-   2.0.1
+   1.10.5
