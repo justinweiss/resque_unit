@@ -42,6 +42,18 @@ describe Resque do
     it "returns all jobs' payloads when all method called" do
       assert Resque.all(MediumPriorityJob.queue).length == 3, "should return all 3 elements"
     end
+
+    describe "enqueue_front" do
+      before do
+        Resque.enqueue_front = true
+        Resque.enqueue(MediumPriorityJob, "0")
+        Resque.enqueue_front = false
+      end
+
+      it "queues the job at front" do
+        assert_equal [["0"], ["1"], ["2"], ["3"]], Resque.peek(MediumPriorityJob.queue, 0, 4).map{|h| h["args"]}
+      end
+    end
   end
 
   describe "without queued jobs" do

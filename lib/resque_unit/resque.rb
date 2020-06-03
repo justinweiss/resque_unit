@@ -107,7 +107,18 @@ module Resque
     end
   end
 
-  # :nodoc: 
+  attr_writer :enqueue_front
+
+  # :nodoc:
+  def enqueue_front
+    if defined? @enqueue_front
+      @enqueue_front
+    else
+      @enqueue_front = false
+    end
+  end
+
+  # :nodoc:
   def enqueue(klass, *args)
     enqueue_to( queue_for(klass), klass, *args)
   end
@@ -119,7 +130,7 @@ module Resque
     enqueue_unit(queue_name, {"class" => klass.to_s, "args" => args })
   end
 
-  # :nodoc: 
+  # :nodoc:
   def queue_for(klass)
     klass.instance_variable_get(:@queue) || (klass.respond_to?(:queue) && klass.queue)
   end
@@ -140,7 +151,13 @@ module Resque
       end
       return nil if before_hooks.any? { |result| result == false }
     end
-    queue(queue_name) << encode(hash)
+
+    if enqueue_front
+      queues[queue_name] = [encode(hash)] + queue(queue_name)
+    else
+      queue(queue_name) << encode(hash)
+    end
+
     if @hooks_enabled
       Plugin.after_enqueue_hooks(klass).each do |hook|
         klass.send(hook, *hash["args"])
@@ -161,7 +178,7 @@ module Resque
     around_hooks  = Resque::Plugin.around_hooks(job_class)
     after_hooks   = Resque::Plugin.after_hooks(job_class)
     failure_hooks = Resque::Plugin.failure_hooks(job_class)
-    
+
     begin
       # Execute before_perform hook. Abort the job gracefully if
       # Resque::DontPerform is raised.
@@ -172,7 +189,7 @@ module Resque
       rescue Resque::Job::DontPerform
         return false
       end
-      
+
       # Execute the job. Do it in an around_perform hook if available.
       if around_hooks.empty?
         perform_without_hooks(job_payload)
@@ -197,15 +214,15 @@ module Resque
         end
         stack.call
       end
-      
+
       # Execute after_perform hook
       after_hooks.each do |hook|
         job_class.send(hook, *job_payload["args"])
       end
-      
+
       # Return true if the job was performed
       return job_was_performed
-      
+
     # If an exception occurs during the job execution, look for an
     # on_failure hook then re-raise.
     rescue Object => e
