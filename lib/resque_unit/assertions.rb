@@ -61,11 +61,11 @@ module ResqueUnit::Assertions
 
   # In Test::Unit, +assert_block+ displays only the message on a test
   # failure and +assert+ always appends a message to the end of the
-  # passed-in assertion message. In MiniTest, it's the other way
+  # passed-in assertion message. In Minitest, it's the other way
   # around. This abstracts those differences and never appends a
   # message to the one the user passed in.
   def assert_with_custom_message(value, message = nil)
-    if defined?(MiniTest::Assertions)
+    if defined?(Minitest::Assertions)
       assert value, message
     else
       assert_block message do
